@@ -10,6 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -294,68 +296,71 @@ fun MiniPlayer(info: MediaInfo, onOpen: () -> Unit, modifier: Modifier = Modifie
     }
 }
 
-/** Fenster über der Uhr: Cover, Titel, Steuerung links – Warteschlange rechts. */
+/** Kompaktes, abgerundetes Fenster über der Uhr: links Cover + Steuerung, rechts schmale Spalte „Als Nächstes“. */
 @Composable
 fun MusicPopup(info: MediaInfo, modifier: Modifier = Modifier) {
     val pos by rememberPosition(info)
     val tint by rememberCoverColor(info.cover)
     val animTint by animateColorAsState(tint, tween(900), label = "ptint")
-    val shape = RoundedCornerShape(34.dp)
+    val shape = RoundedCornerShape(32.dp)
     Row(
         modifier
-            .widthIn(max = 820.dp)
-            .fillMaxWidth()
-            .fillMaxHeight(0.9f)
-            .shadow(40.dp, shape)
+            .height(330.dp)
+            .shadow(32.dp, shape)
             .clip(shape)
-            .background(Brush.linearGradient(listOf(lerp(animTint, Color.Black, 0.2f), Color(0xFF121216))))
+            .background(Brush.linearGradient(listOf(lerp(animTint, Color.Black, 0.25f), Color(0xFF141418))))
+            .border(1.dp, Color.White.copy(alpha = 0.08f), shape)
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
-            .padding(20.dp),
+            .padding(18.dp),
     ) {
-        // Links: Cover, Name, Steuerung
-        Column(Modifier.fillMaxHeight().width(240.dp), verticalArrangement = Arrangement.SpaceBetween) {
-            Cover(info.cover, Modifier.size(136.dp), radius = 20.dp, elevation = 16.dp)
-            Column(Modifier.padding(top = 10.dp)) {
-                Text(info.title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(info.artist, color = Color.White.copy(alpha = 0.6f), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                SeekBar(
-                    progress = if (info.duration > 0) pos.toFloat() / info.duration else 0f,
-                    onSeek = { if (info.duration > 0) MediaRepo.seekTo((it * info.duration).toLong()) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                    IconBtn(Ic.PREV, Color.White, 28.dp, { MediaRepo.previous() }, pad = 10.dp)
-                    IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, Color.White, 30.dp, { MediaRepo.playPause() }, pad = 10.dp)
-                    IconBtn(Ic.NEXT, Color.White, 28.dp, { MediaRepo.next() }, pad = 10.dp)
-                }
+        // Links: großes Cover, Titel/Interpret zentriert, Steuerung
+        Column(Modifier.width(210.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Cover(info.cover, Modifier.size(168.dp), radius = 22.dp, elevation = 14.dp)
+            Spacer(Modifier.height(10.dp))
+            Text(
+                info.title, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                info.artist, color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp,
+                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
+            SeekBar(
+                progress = if (info.duration > 0) pos.toFloat() / info.duration else 0f,
+                onSeek = { if (info.duration > 0) MediaRepo.seekTo((it * info.duration).toLong()) },
+                modifier = Modifier.fillMaxWidth().height(22.dp),
+            )
+            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                IconBtn(Ic.PREV, Color.White, 22.dp, { MediaRepo.previous() }, pad = 9.dp)
+                IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, Color.White, 24.dp, { MediaRepo.playPause() }, pad = 9.dp)
+                IconBtn(Ic.NEXT, Color.White, 22.dp, { MediaRepo.next() }, pad = 9.dp)
             }
         }
-        Spacer(Modifier.width(28.dp))
-        // Rechts: Warteschlange
-        Column(Modifier.weight(1f).fillMaxHeight()) {
-            Text("ALS NÄCHSTES", color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.width(16.dp))
+        Box(Modifier.width(1.dp).fillMaxHeight().background(Color.White.copy(alpha = 0.08f)))
+        Spacer(Modifier.width(14.dp))
+        // Rechts: schmale Spalte mit den folgenden Liedern
+        Column(Modifier.width(200.dp)) {
+            Text("ALS NÄCHSTES", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(8.dp))
             val next = info.upcoming()
             if (next.isEmpty()) {
-                Text(
-                    "${info.appName.lowercase().replaceFirstChar { it.uppercase() }} teilt die Warteschlange gerade nicht.",
-                    color = Color.White.copy(alpha = 0.55f), fontSize = 15.sp,
-                )
+                Text("Der Player teilt die Warteschlange gerade nicht.", color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp)
             } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     items(next, key = { it.id }) { q ->
                         Row(
                             Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(12.dp))
                                 .clickable { MediaRepo.playQueueItem(q.id) }
-                                .padding(6.dp),
+                                .padding(4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Cover(q.icon, Modifier.size(46.dp), radius = 10.dp, elevation = 0.dp)
-                            Column(Modifier.padding(start = 12.dp)) {
-                                Text(q.title, color = Color.White, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                if (q.subtitle.isNotBlank()) Text(q.subtitle, color = Color.White.copy(alpha = 0.55f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Cover(q.icon, Modifier.size(38.dp), radius = 8.dp, elevation = 0.dp)
+                            Column(Modifier.padding(start = 10.dp)) {
+                                Text(q.title, color = Color.White, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                if (q.subtitle.isNotBlank()) Text(q.subtitle, color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }

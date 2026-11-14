@@ -229,7 +229,6 @@ fun StandbyRoot(window: Window) {
                     MusicPopup(
                         it,
                         Modifier
-                            .padding(horizontal = 32.dp)
                             .animateEnterExit(
                                 enter = scaleIn(tween(260), initialScale = 0.88f) + slideInVertically(tween(260)) { h -> h / 6 },
                                 exit = scaleOut(tween(200), targetScale = 0.92f),
