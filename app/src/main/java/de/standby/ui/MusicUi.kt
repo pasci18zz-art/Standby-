@@ -66,6 +66,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.palette.graphics.Palette
 import de.standby.media.MediaInfo
+import de.standby.media.QueueEntry
+import androidx.compose.foundation.layout.BoxWithConstraints
 import de.standby.media.MediaRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -258,11 +260,14 @@ fun MiniPlayer(info: MediaInfo, onOpen: () -> Unit, modifier: Modifier = Modifie
     val src = remember { MutableInteractionSource() }
     val pressed by src.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, spring(dampingRatio = 0.5f), label = "bar")
+    val tint by rememberCoverColor(info.cover)
+    val animTint by animateColorAsState(lerp(tint, Color.White, 0.08f), tween(900), label = "bartint")
     Row(
         modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(shape)
-            .background(Color.White.copy(alpha = if (pressed) 0.13f else 0.07f))
+            .background(Brush.verticalGradient(listOf(animTint.copy(alpha = if (pressed) 0.75f else 0.55f), animTint.copy(alpha = if (pressed) 0.95f else 0.8f))))
+            .border(1.dp, lerp(animTint, Color.White, 0.35f).copy(alpha = 0.35f), shape)
             .clickable(interactionSource = src, indication = null, onClick = onOpen)
             .padding(start = 18.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -296,10 +301,82 @@ fun MiniPlayer(info: MediaInfo, onOpen: () -> Unit, modifier: Modifier = Modifie
     }
 }
 
-/** Kompaktes, abgerundetes Fenster über der Uhr: links Cover + Steuerung, rechts schmale Spalte „Als Nächstes“. */
+/** Cover eines Warteschlangen-Eintrags: mitgeliefertes Bild oder über die Bild-Adresse geladen. */
+@Composable
+private fun rememberQueueArt(q: QueueEntry): State<Bitmap?> = produceState(q.icon, q.id, q.iconUri) {
+    if (value == null && q.iconUri != null) value = withContext(Dispatchers.IO) { MediaRepo.loadArt(q.iconUri) }
+}
+
+/** Linke Spalte: Cover, Titel/Interpret zentriert, Spulbalken, Steuerung. */
+@Composable
+private fun PlayerColumn(info: MediaInfo, coverSize: Dp, scale: Float, modifier: Modifier = Modifier) {
+    val pos by rememberPosition(info)
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Cover(info.cover, Modifier.size(coverSize), radius = 22.dp * scale, elevation = 14.dp)
+        Spacer(Modifier.height(10.dp * scale))
+        Text(
+            info.title, color = Color.White, fontSize = 17.sp * scale, fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            info.artist, color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp * scale,
+            textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
+        SeekBar(
+            progress = if (info.duration > 0) pos.toFloat() / info.duration else 0f,
+            onSeek = { if (info.duration > 0) MediaRepo.seekTo((it * info.duration).toLong()) },
+            modifier = Modifier.fillMaxWidth().height(22.dp * scale),
+        )
+        if (scale > 1.05f) TimeRow(info, pos, Modifier.fillMaxWidth(), size = 13)
+        Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            IconBtn(Ic.PREV, Color.White, 22.dp * scale, { MediaRepo.previous() }, pad = 9.dp * scale)
+            IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, Color.White, 24.dp * scale, { MediaRepo.playPause() }, pad = 9.dp * scale)
+            IconBtn(Ic.NEXT, Color.White, 22.dp * scale, { MediaRepo.next() }, pad = 9.dp * scale)
+        }
+    }
+}
+
+/** Rechte Spalte: „Als Nächstes“ – Cover nur, wenn der Player eines herausgibt. */
+@Composable
+private fun QueueColumn(info: MediaInfo, scale: Float, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text("ALS NÄCHSTES", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp * scale, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(8.dp))
+        val next = info.upcoming()
+        if (next.isEmpty()) {
+            Text("Der Player teilt die Warteschlange gerade nicht.", color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp * scale)
+            return@Column
+        }
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp * scale)) {
+            items(next, key = { it.id }) { q ->
+                val art by rememberQueueArt(q)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { MediaRepo.playQueueItem(q.id) }
+                        .padding(horizontal = 6.dp, vertical = 5.dp * scale),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    art?.let {
+                        Cover(it, Modifier.size(38.dp * scale), radius = 8.dp, elevation = 0.dp)
+                        Spacer(Modifier.width(10.dp))
+                    }
+                    Column {
+                        Text(q.title, color = Color.White, fontSize = 13.sp * scale, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (q.subtitle.isNotBlank()) {
+                            Text(q.subtitle, color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp * scale, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Kompaktes, abgerundetes Fenster über der Uhr. */
 @Composable
 fun MusicPopup(info: MediaInfo, modifier: Modifier = Modifier) {
-    val pos by rememberPosition(info)
     val tint by rememberCoverColor(info.cover)
     val animTint by animateColorAsState(tint, tween(900), label = "ptint")
     val shape = RoundedCornerShape(32.dp)
@@ -313,59 +390,31 @@ fun MusicPopup(info: MediaInfo, modifier: Modifier = Modifier) {
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
             .padding(18.dp),
     ) {
-        // Links: großes Cover, Titel/Interpret zentriert, Steuerung
-        Column(Modifier.width(210.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Cover(info.cover, Modifier.size(168.dp), radius = 22.dp, elevation = 14.dp)
-            Spacer(Modifier.height(10.dp))
-            Text(
-                info.title, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                info.artist, color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp,
-                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            )
-            SeekBar(
-                progress = if (info.duration > 0) pos.toFloat() / info.duration else 0f,
-                onSeek = { if (info.duration > 0) MediaRepo.seekTo((it * info.duration).toLong()) },
-                modifier = Modifier.fillMaxWidth().height(22.dp),
-            )
-            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                IconBtn(Ic.PREV, Color.White, 22.dp, { MediaRepo.previous() }, pad = 9.dp)
-                IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, Color.White, 24.dp, { MediaRepo.playPause() }, pad = 9.dp)
-                IconBtn(Ic.NEXT, Color.White, 22.dp, { MediaRepo.next() }, pad = 9.dp)
-            }
-        }
+        PlayerColumn(info, coverSize = 168.dp, scale = 1f, modifier = Modifier.width(210.dp))
         Spacer(Modifier.width(16.dp))
         Box(Modifier.width(1.dp).fillMaxHeight().background(Color.White.copy(alpha = 0.08f)))
         Spacer(Modifier.width(14.dp))
-        // Rechts: schmale Spalte mit den folgenden Liedern
-        Column(Modifier.width(200.dp)) {
-            Text("ALS NÄCHSTES", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(8.dp))
-            val next = info.upcoming()
-            if (next.isEmpty()) {
-                Text("Der Player teilt die Warteschlange gerade nicht.", color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp)
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(next, key = { it.id }) { q ->
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { MediaRepo.playQueueItem(q.id) }
-                                .padding(4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Cover(q.icon, Modifier.size(38.dp), radius = 8.dp, elevation = 0.dp)
-                            Column(Modifier.padding(start = 10.dp)) {
-                                Text(q.title, color = Color.White, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                if (q.subtitle.isNotBlank()) Text(q.subtitle, color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            }
-                        }
-                    }
-                }
+        QueueColumn(info, scale = 1f, modifier = Modifier.width(200.dp))
+    }
+}
+
+/** Eigene Musik-Seite im selben Stil wie das Fenster, bildschirmfüllend. */
+@Composable
+fun MusicPage(info: MediaInfo, modifier: Modifier = Modifier) {
+    val tint by rememberCoverColor(info.cover)
+    val animTint by animateColorAsState(tint, tween(900), label = "pgtint")
+    BoxWithConstraints(
+        modifier
+            .fillMaxSize()
+            .background(Brush.linearGradient(listOf(lerp(animTint, Color.Black, 0.2f), Color(0xFF0E0E12)))),
+    ) {
+        val cover = (maxHeight - 190.dp).coerceIn(150.dp, 300.dp)
+        Row(Modifier.fillMaxSize().padding(horizontal = 36.dp, vertical = 24.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                PlayerColumn(info, coverSize = cover, scale = 1.2f, modifier = Modifier.width(cover + 90.dp))
             }
+            Box(Modifier.width(1.dp).fillMaxHeight(0.8f).background(Color.White.copy(alpha = 0.08f)))
+            QueueColumn(info, scale = 1.2f, modifier = Modifier.weight(0.9f).fillMaxHeight().padding(start = 28.dp, top = 12.dp))
         }
     }
 }

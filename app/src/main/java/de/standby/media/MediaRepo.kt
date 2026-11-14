@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /** Leerer Dienst: Android erlaubt den Zugriff auf laufende Musik nur Apps mit aktivem Benachrichtigungszugriff. */
 class MediaListener : NotificationListenerService()
 
-data class QueueEntry(val id: Long, val title: String, val subtitle: String, val icon: Bitmap?)
+data class QueueEntry(val id: Long, val title: String, val subtitle: String, val icon: Bitmap?, val iconUri: String? = null)
 
 data class MediaInfo(
     val pkg: String,
@@ -143,6 +143,7 @@ object MediaRepo {
                     title = it.description.title?.toString() ?: "",
                     subtitle = it.description.subtitle?.toString() ?: "",
                     icon = it.description.iconBitmap,
+                    iconUri = it.description.iconUri?.toString(),
                 )
             },
             activeQueueId = st?.activeQueueItemId ?: -1,
@@ -171,6 +172,36 @@ object MediaRepo {
 
     fun next() = controller?.transportControls?.skipToNext() ?: Unit
     fun previous() = controller?.transportControls?.skipToPrevious() ?: Unit
+    // ---------- Cover der Warteschlange ----------
+
+    private val artCache = android.util.LruCache<String, Bitmap>(40)
+    private val artFailed = HashSet<String>()
+
+    /**
+     * Lädt ein Cover über die Bild-Adresse, die der Player mitliefert (Internet oder Inhalts-Anbieter).
+     * Gibt null zurück, wenn der Player keines herausgibt.
+     */
+    fun loadArt(uri: String): Bitmap? {
+        artCache.get(uri)?.let { return it }
+        if (uri in artFailed) return null
+        val ctx = app ?: return null
+        val bmp = try {
+            val stream = when {
+                uri.startsWith("http://") || uri.startsWith("https://") ->
+                    (java.net.URL(uri).openConnection().apply { connectTimeout = 8000; readTimeout = 8000 }).getInputStream()
+                uri.startsWith("content://") || uri.startsWith("android.resource://") || uri.startsWith("file://") ->
+                    ctx.contentResolver.openInputStream(android.net.Uri.parse(uri))
+                else -> null
+            }
+            stream?.use { android.graphics.BitmapFactory.decodeStream(it) }
+                ?.let { b -> if (b.width > 160) Bitmap.createScaledBitmap(b, 160, 160 * b.height / b.width, true) else b }
+        } catch (_: Throwable) {
+            null
+        }
+        if (bmp != null) artCache.put(uri, bmp) else synchronized(artFailed) { artFailed.add(uri) }
+        return bmp
+    }
+
     fun playQueueItem(id: Long) = controller?.transportControls?.skipToQueueItem(id) ?: Unit
     fun seekTo(ms: Long) = controller?.transportControls?.seekTo(ms) ?: Unit
 }

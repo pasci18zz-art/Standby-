@@ -46,6 +46,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -174,7 +180,7 @@ fun StandbyRoot(window: Window) {
         ) { i ->
             when (pages.getOrNull(i)) {
                 Page.CLOCK -> ClockPage(now, media, musicActive) { musicPopup = true }
-                Page.MUSIC -> media?.let { MusicFull(it) }
+                Page.MUSIC -> media?.let { MusicPage(it) }
                 Page.SPLIT -> SplitPage(now, media, musicActive)
                 Page.INFO -> InfoPage()
                 null -> {}
@@ -288,6 +294,29 @@ private fun ClockPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolea
             }
         }
         if (showMini && media != null) {
+            val glow by rememberCoverColor(media.cover)
+            val animGlow by animateColorAsState(glow, tween(1200), label = "glow")
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.42f)
+                    .drawBehind {
+                        val c = lerp(animGlow, Color.White, 0.1f)
+                        // Elliptischer Schimmer, der von unten in die Seite hineinleuchtet
+                        scale(scaleX = 1.9f, scaleY = 1f, pivot = Offset(size.width / 2f, size.height)) {
+                            drawCircle(
+                                Brush.radialGradient(
+                                    listOf(c.copy(alpha = 0.42f), c.copy(alpha = 0.12f), Color.Transparent),
+                                    center = Offset(size.width / 2f, size.height * 1.05f),
+                                    radius = size.height * 1.05f,
+                                ),
+                                radius = size.height * 1.05f,
+                                center = Offset(size.width / 2f, size.height * 1.05f),
+                            )
+                        }
+                    },
+            )
             MiniPlayer(media, onOpenMusic, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
         }
     }
