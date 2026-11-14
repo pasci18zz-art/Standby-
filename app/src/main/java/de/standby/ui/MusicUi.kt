@@ -10,6 +10,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -141,7 +151,7 @@ fun SeekBar(progress: Float, onSeek: (Float) -> Unit, modifier: Modifier = Modif
 private fun Controls(info: MediaInfo, iconSize: Dp, gap: Dp, tint: Color = Color.White) {
     Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
         IconBtn(Ic.PREV, tint, iconSize, { MediaRepo.previous() })
-        IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, tint, iconSize * 1.25f, { MediaRepo.playPause() })
+        IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, tint, iconSize * 1.1f, { MediaRepo.playPause() })
         IconBtn(Ic.NEXT, tint, iconSize, { MediaRepo.next() })
     }
 }
@@ -235,21 +245,27 @@ fun MusicCard(info: MediaInfo, modifier: Modifier = Modifier) {
     }
 }
 
-/** Schlanke Leiste unter der Uhr: Titel · Interpret, Fortschritt, „Weiter“. */
+/**
+ * Schlanke Leiste unter der Uhr: Titel · Interpret, darunter ein kurzer Fortschrittsbalken
+ * (so breit wie der Text), rechts Zurück / Pause / Weiter. Antippen öffnet das Musik-Fenster.
+ */
 @Composable
-fun MiniPlayer(info: MediaInfo, modifier: Modifier = Modifier) {
+fun MiniPlayer(info: MediaInfo, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     val pos by rememberPosition(info)
     val shape = RoundedCornerShape(22.dp)
+    val src = remember { MutableInteractionSource() }
+    val pressed by src.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, spring(dampingRatio = 0.5f), label = "bar")
     Row(
         modifier
-            .widthIn(max = 420.dp)
-            .fillMaxWidth()
+            .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(shape)
-            .background(Color.White.copy(alpha = 0.07f))
-            .padding(start = 18.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+            .background(Color.White.copy(alpha = if (pressed) 0.13f else 0.07f))
+            .clickable(interactionSource = src, indication = null, onClick = onOpen)
+            .padding(start = 18.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.widthIn(max = 300.dp).width(IntrinsicSize.Max)) {
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     info.title, color = Color.White.copy(alpha = 0.92f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
@@ -262,14 +278,89 @@ fun MiniPlayer(info: MediaInfo, modifier: Modifier = Modifier) {
                     )
                 }
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(5.dp))
             val prog = if (info.duration > 0) (pos.toFloat() / info.duration).coerceIn(0f, 1f) else 0f
+            val animProg by animateFloatAsState(prog, tween(500), label = "prog")
             Canvas(Modifier.fillMaxWidth().height(3.dp)) {
                 val r = CornerRadius(size.height / 2)
                 drawRoundRect(Color.White.copy(alpha = 0.18f), Offset.Zero, size, r)
-                drawRoundRect(Color.White.copy(alpha = 0.85f), Offset.Zero, Size(size.width * prog, size.height), r)
+                drawRoundRect(Color.White.copy(alpha = 0.85f), Offset.Zero, Size(size.width * animProg, size.height), r)
             }
         }
-        IconBtn(Ic.NEXT, Color.White.copy(alpha = 0.85f), 20.dp, { MediaRepo.next() }, pad = 10.dp)
+        Spacer(Modifier.width(10.dp))
+        IconBtn(Ic.PREV, Color.White.copy(alpha = 0.85f), 18.dp, { MediaRepo.previous() }, pad = 9.dp)
+        IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, Color.White, 19.dp, { MediaRepo.playPause() }, pad = 9.dp)
+        IconBtn(Ic.NEXT, Color.White.copy(alpha = 0.85f), 18.dp, { MediaRepo.next() }, pad = 9.dp)
+    }
+}
+
+/** Fenster über der Uhr: Cover, Titel, Steuerung links – Warteschlange rechts. */
+@Composable
+fun MusicPopup(info: MediaInfo, modifier: Modifier = Modifier) {
+    val pos by rememberPosition(info)
+    val tint by rememberCoverColor(info.cover)
+    val animTint by animateColorAsState(tint, tween(900), label = "ptint")
+    val shape = RoundedCornerShape(34.dp)
+    Row(
+        modifier
+            .widthIn(max = 820.dp)
+            .fillMaxWidth()
+            .fillMaxHeight(0.9f)
+            .shadow(40.dp, shape)
+            .clip(shape)
+            .background(Brush.linearGradient(listOf(lerp(animTint, Color.Black, 0.2f), Color(0xFF121216))))
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
+            .padding(20.dp),
+    ) {
+        // Links: Cover, Name, Steuerung
+        Column(Modifier.fillMaxHeight().width(240.dp), verticalArrangement = Arrangement.SpaceBetween) {
+            Cover(info.cover, Modifier.size(136.dp), radius = 20.dp, elevation = 16.dp)
+            Column(Modifier.padding(top = 10.dp)) {
+                Text(info.title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(info.artist, color = Color.White.copy(alpha = 0.6f), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                SeekBar(
+                    progress = if (info.duration > 0) pos.toFloat() / info.duration else 0f,
+                    onSeek = { if (info.duration > 0) MediaRepo.seekTo((it * info.duration).toLong()) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                    IconBtn(Ic.PREV, Color.White, 28.dp, { MediaRepo.previous() }, pad = 10.dp)
+                    IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, Color.White, 30.dp, { MediaRepo.playPause() }, pad = 10.dp)
+                    IconBtn(Ic.NEXT, Color.White, 28.dp, { MediaRepo.next() }, pad = 10.dp)
+                }
+            }
+        }
+        Spacer(Modifier.width(28.dp))
+        // Rechts: Warteschlange
+        Column(Modifier.weight(1f).fillMaxHeight()) {
+            Text("ALS NÄCHSTES", color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(10.dp))
+            val next = info.upcoming()
+            if (next.isEmpty()) {
+                Text(
+                    "${info.appName.lowercase().replaceFirstChar { it.uppercase() }} teilt die Warteschlange gerade nicht.",
+                    color = Color.White.copy(alpha = 0.55f), fontSize = 15.sp,
+                )
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(next, key = { it.id }) { q ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { MediaRepo.playQueueItem(q.id) }
+                                .padding(6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Cover(q.icon, Modifier.size(46.dp), radius = 10.dp, elevation = 0.dp)
+                            Column(Modifier.padding(start = 12.dp)) {
+                                Text(q.title, color = Color.White, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                if (q.subtitle.isNotBlank()) Text(q.subtitle, color = Color.White.copy(alpha = 0.55f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

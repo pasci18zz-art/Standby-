@@ -54,6 +54,11 @@ import de.standby.data.Planner
 import de.standby.data.Weather
 import de.standby.media.MediaRepo
 import de.standby.palettes
+import de.standby.customPalette
+import de.standby.hueColor
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.launch
 
 @Composable
@@ -120,6 +125,29 @@ private fun ColorDots(options: List<Pair<String, List<Color>>>, selected: String
 }
 
 @Composable
+private fun HueSlider(label: String, hue: Float, onChange: (Float) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(26.dp).clip(CircleShape).background(hueColor(hue)))
+        Text(label, color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp, modifier = Modifier.padding(start = 10.dp).width(96.dp))
+        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            // Regenbogen-Spur hinter dem Regler
+            Box(
+                Modifier.fillMaxWidth().padding(horizontal = 10.dp).height(8.dp).clip(RoundedCornerShape(4.dp))
+                    .background(Brush.horizontalGradient((0..6).map { hueColor(it * 60f) })),
+            )
+            Slider(
+                value = hue, onValueChange = onChange, valueRange = 0f..360f,
+                colors = SliderDefaults.colors(
+                    thumbColor = hueColor(hue),
+                    activeTrackColor = Color.Transparent,
+                    inactiveTrackColor = Color.Transparent,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
 fun SettingsScreen(onClose: () -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -144,7 +172,21 @@ fun SettingsScreen(onClose: () -> Unit) {
             Section("Uhr") {
                 Chips(clockStyles, Prefs.clockStyle) { Prefs.clockStyle = it }
                 Text("Farben (Linien-Uhr)", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
-                ColorDots(palettes.map { it.id to listOf(it.c1, it.c2, it.c3, it.colon) }, Prefs.palette) { Prefs.palette = it }
+                ColorDots(
+                    palettes.map { it.id to (it.spectrum + it.colon) } + ("custom" to (customPalette().spectrum + customPalette().colon)),
+                    Prefs.palette,
+                ) { Prefs.palette = it }
+                Text(
+                    (palettes.firstOrNull { it.id == Prefs.palette }?.name ?: "Eigene Farben"),
+                    color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp,
+                )
+                if (Prefs.palette == "custom") {
+                    HueSlider("Farbe 1", Prefs.customH1) { Prefs.customH1 = it }
+                    HueSlider("Farbe 2", Prefs.customH2) { Prefs.customH2 = it }
+                    HueSlider("Farbe 3", Prefs.customH3) { Prefs.customH3 = it }
+                    HueSlider("Doppelpunkt", Prefs.customHColon) { Prefs.customHColon = it }
+                }
+                SwitchRow("Verspielte Linien (mit Lücken, wie Daily Board)", Prefs.playfulLines) { Prefs.playfulLines = it }
                 Text("Hintergrund", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
                 ColorDots(backdrops.map { it.id to listOf(it.color) }, Prefs.background) { Prefs.background = it }
                 SwitchRow("24-Stunden-Format", Prefs.use24h) { Prefs.use24h = it }

@@ -31,7 +31,9 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.translate
@@ -175,18 +177,30 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
             )
         }
 
+        val playful = Prefs.playfulLines && !neon
+        val spec = pal.spectrum
+
         fun drawDigits(l: StrokeLayer, fill: Boolean) {
             paths.forEachIndexed { i, (path, adv, _) ->
                 val x = cellX(i) + (cell - adv) / 2f
-                translate(x, baseline) {
-                    val st = if (fill) Fill else Stroke(width = fp * l.frac, join = StrokeJoin.Round, cap = StrokeCap.Round)
+                // Verspielt: farbige Linien leicht versetzt und mit Lücken an unterschiedlichen Stellen.
+                val colored = !fill && l.color == null
+                val wob = if (playful && colored) fp * 0.012f * (l.brushIdx - 1) else 0f
+                translate(x + wob, baseline - wob * 0.6f) {
+                    val effect = if (playful && colored) {
+                        val on = fp * (1.05f + 0.42f * l.brushIdx + 0.13f * i)
+                        val off = fp * (0.07f + 0.035f * l.brushIdx)
+                        PathEffect.dashPathEffect(floatArrayOf(on, off), fp * (0.61f * i + 0.37f * l.brushIdx))
+                    } else null
+                    val st = if (fill) Fill else Stroke(width = fp * l.frac, join = StrokeJoin.Round, cap = StrokeCap.Round, pathEffect = effect)
                     when {
                         fill -> drawPath(path, bg, style = st)
                         l.color != null -> drawPath(path, l.color.copy(alpha = l.alpha), style = st)
                         else -> {
-                            val c = when (l.brushIdx) { 0 -> pal.c1; 1 -> pal.c2; else -> pal.c3 }
-                            val c2 = when (l.brushIdx) { 0 -> pal.c2; 1 -> pal.c3; else -> pal.c1 }
-                            val brush = Brush.linearGradient(listOf(c, c2), start = Offset(0f, -cap), end = Offset(cell, 0f))
+                            // Verlauf über das ganze Farbspektrum, je Linie und Ziffer verschoben.
+                            val shift = (l.brushIdx + i) % spec.size
+                            val cols = spec.drop(shift) + spec.take(shift)
+                            val brush = Brush.linearGradient(cols, start = Offset(0f, -cap), end = Offset(cell, 0f))
                             drawPath(path, brush, style = st)
                         }
                     }
@@ -215,8 +229,10 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
                 drawCircle(Color.White.copy(alpha = 0.22f), r, c, style = Stroke(fp * 0.034f))
                 drawCircle(Color.White.copy(alpha = 0.97f), r, c, style = Stroke(fp * 0.016f))
             } else {
-                drawCircle(pal.colon, r * 1.15f, c, style = Stroke(fp * 0.026f))
-                drawCircle(pal.colon.copy(alpha = 0.75f), r * 0.78f, c, style = Stroke(fp * 0.016f))
+                val e1 = if (playful) PathEffect.dashPathEffect(floatArrayOf(r * 5.4f, r * 0.55f), r * (if (dy < 0) 0.8f else 3.1f)) else null
+                val e2 = if (playful) PathEffect.dashPathEffect(floatArrayOf(r * 3.6f, r * 0.45f), r * (if (dy < 0) 2.2f else 0.4f)) else null
+                drawCircle(pal.colon, r * 1.15f, c, style = Stroke(fp * 0.026f, cap = StrokeCap.Round, pathEffect = e1))
+                drawCircle(lerp(pal.colon, pal.c3, 0.35f), r * 0.78f, c, style = Stroke(fp * 0.016f, cap = StrokeCap.Round, pathEffect = e2))
             }
         }
     }

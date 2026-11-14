@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.media.session.MediaController
+import android.media.session.MediaSession
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.os.Handler
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Leerer Dienst: Android erlaubt den Zugriff auf laufende Musik nur Apps mit aktivem Benachrichtigungszugriff. */
 class MediaListener : NotificationListenerService()
+
+data class QueueEntry(val id: Long, val title: String, val subtitle: String, val icon: Bitmap?)
 
 data class MediaInfo(
     val pkg: String,
@@ -29,7 +32,15 @@ data class MediaInfo(
     val stamp: Long,
     val speed: Float,
     val lastPlayingAt: Long,
+    val queue: List<QueueEntry> = emptyList(),
+    val activeQueueId: Long = -1,
 ) {
+    /** Die Titel nach dem aktuellen (sofern der Player seine Warteschlange teilt). */
+    fun upcoming(): List<QueueEntry> {
+        val idx = queue.indexOfFirst { it.id == activeQueueId }
+        return if (idx >= 0) queue.drop(idx + 1) else queue
+    }
+
     fun positionNow(): Long {
         val p = if (playing) position + ((SystemClock.elapsedRealtime() - stamp) * speed).toLong() else position
         return if (duration > 0) p.coerceIn(0, duration) else p.coerceAtLeast(0)
@@ -53,6 +64,7 @@ object MediaRepo {
         override fun onMetadataChanged(metadata: MediaMetadata?) = publish()
         override fun onPlaybackStateChanged(state: PlaybackState?) = publish()
         override fun onSessionDestroyed() = refresh()
+        override fun onQueueChanged(queue: MutableList<MediaSession.QueueItem>?) = publish()
     }
 
     private fun component(ctx: Context) = ComponentName(ctx, MediaListener::class.java)
@@ -125,6 +137,15 @@ object MediaRepo {
             stamp = st?.lastPositionUpdateTime?.takeIf { it > 0 } ?: SystemClock.elapsedRealtime(),
             speed = st?.playbackSpeed?.takeIf { it > 0f } ?: 1f,
             lastPlayingAt = lastPlayingAt,
+            queue = c.queue.orEmpty().take(60).map {
+                QueueEntry(
+                    id = it.queueId,
+                    title = it.description.title?.toString() ?: "",
+                    subtitle = it.description.subtitle?.toString() ?: "",
+                    icon = it.description.iconBitmap,
+                )
+            },
+            activeQueueId = st?.activeQueueItemId ?: -1,
         )
     }
 
@@ -150,5 +171,6 @@ object MediaRepo {
 
     fun next() = controller?.transportControls?.skipToNext() ?: Unit
     fun previous() = controller?.transportControls?.skipToPrevious() ?: Unit
+    fun playQueueItem(id: Long) = controller?.transportControls?.skipToQueueItem(id) ?: Unit
     fun seekTo(ms: Long) = controller?.transportControls?.seekTo(ms) ?: Unit
 }

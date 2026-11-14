@@ -8,6 +8,24 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawBehind
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -81,14 +99,39 @@ fun GIcon(ic: Ic, tint: Color, modifier: Modifier = Modifier) {
     }
 }
 
-/** Antippbares Symbol mit großzügiger Trefferfläche. */
+/**
+ * Antippbares Symbol mit großzügiger Trefferfläche und spürbarer Rückmeldung:
+ * beim Drücken federt es zusammen und ein heller Kreis leuchtet kurz auf.
+ */
 @Composable
 fun IconBtn(ic: Ic, tint: Color, size: Dp, onClick: () -> Unit, modifier: Modifier = Modifier, pad: Dp = 14.dp) {
     val src = remember { MutableInteractionSource() }
+    val pressed by src.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.78f else 1f, spring(dampingRatio = 0.45f, stiffness = 600f), label = "scale")
+    val glow = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
     Box(
-        modifier.clickable(interactionSource = src, indication = null, onClick = onClick).padding(pad),
+        modifier
+            .clickable(interactionSource = src, indication = null) {
+                scope.launch {
+                    glow.snapTo(0.28f)
+                    glow.animateTo(0f, tween(450))
+                }
+                onClick()
+            }
+            .padding(pad)
+            .drawBehind {
+                val g = glow.value
+                if (g > 0f) drawCircle(tint.copy(alpha = g), radius = this.size.minDimension * (1.05f - g))
+            },
         contentAlignment = Alignment.Center,
     ) {
-        GIcon(ic, tint, Modifier.size(size))
+        AnimatedContent(
+            targetState = ic,
+            transitionSpec = { (scaleIn(initialScale = 0.5f) + fadeIn()) togetherWith (scaleOut(targetScale = 0.5f) + fadeOut()) },
+            label = "icon",
+        ) { target ->
+            GIcon(target, tint, Modifier.size(size).graphicsLayer { scaleX = scale; scaleY = scale })
+        }
     }
 }

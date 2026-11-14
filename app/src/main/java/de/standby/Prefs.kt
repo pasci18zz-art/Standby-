@@ -52,7 +52,12 @@ object Prefs {
 
     // Uhr
     var clockStyle by P("clock_style", "lines")
-    var palette by P("palette", "violet")
+    var palette by P("palette", "daily")
+    var playfulLines by P("playful_lines", true)
+    var customH1 by P("custom_h1", 265f)
+    var customH2 by P("custom_h2", 300f)
+    var customH3 by P("custom_h3", 330f)
+    var customHColon by P("custom_hc", 5f)
     var background by P("background", "navy")
     var use24h by P("use24h", true)
     var showSeconds by P("show_seconds", false)
@@ -79,10 +84,23 @@ object Prefs {
     var sbKey by P("sb_key", "")
 }
 
-class Palette(val id: String, val name: String, val c1: Color, val c2: Color, val c3: Color, val colon: Color)
+class Palette(
+    val id: String,
+    val name: String,
+    val c1: Color,
+    val c2: Color,
+    val c3: Color,
+    val colon: Color,
+    /** Farben für die Verläufe in den Linien – mehr Farben = bunter. */
+    val spectrum: List<Color> = listOf(c1, c2, c3),
+)
 class Backdrop(val id: String, val name: String, val color: Color)
 
 val palettes = listOf(
+    Palette(
+        "daily", "Daily Board", Color(0xFF7C5CFF), Color(0xFFE056FD), Color(0xFFFF9EC7), Color(0xFFFF5A5F),
+        spectrum = listOf(Color(0xFF7C5CFF), Color(0xFFB65CFF), Color(0xFFE056FD), Color(0xFFFF7EB6), Color(0xFFFFA26B)),
+    ),
     Palette("violet", "Violett", Color(0xFF8B5CF6), Color(0xFFE879F9), Color(0xFFFBA8C8), Color(0xFFF25C54)),
     Palette("ocean", "Ozean", Color(0xFF3B82F6), Color(0xFF22D3EE), Color(0xFFA7F3D0), Color(0xFFFB923C)),
     Palette("sunset", "Sonnenuntergang", Color(0xFFF97316), Color(0xFFF43F5E), Color(0xFFFBBF24), Color(0xFF8B5CF6)),
@@ -98,5 +116,18 @@ val backdrops = listOf(
     Backdrop("slate", "Schiefer", Color(0xFF1E293B)),
 )
 
-fun currentPalette() = palettes.firstOrNull { it.id == Prefs.palette } ?: palettes[0]
+fun hueColor(h: Float, s: Float = 0.72f, v: Float = 1f) = Color.hsv(((h % 360f) + 360f) % 360f, s, v)
+
+/** Eigene Palette aus den vier eingestellten Farbtönen. */
+fun customPalette(): Palette {
+    val a = hueColor(Prefs.customH1)
+    val b = hueColor(Prefs.customH2)
+    val c = hueColor(Prefs.customH3, 0.5f)
+    return Palette(
+        "custom", "Eigene", a, b, c, hueColor(Prefs.customHColon),
+        spectrum = listOf(a, hueColor((Prefs.customH1 + Prefs.customH2) / 2f), b, c),
+    )
+}
+
+fun currentPalette() = if (Prefs.palette == "custom") customPalette() else palettes.firstOrNull { it.id == Prefs.palette } ?: palettes[0]
 fun currentBackdrop() = backdrops.firstOrNull { it.id == Prefs.background } ?: backdrops[0]

@@ -8,6 +8,10 @@ import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -143,6 +147,8 @@ fun StandbyRoot(window: Window) {
 
     var overlay by remember { mutableStateOf(false) }
     var settings by remember { mutableStateOf(false) }
+    var musicPopup by remember { mutableStateOf(false) }
+    if (!musicActive && musicPopup) musicPopup = false
     LaunchedEffect(overlay) {
         if (overlay) {
             delay(5000)
@@ -167,7 +173,7 @@ fun StandbyRoot(window: Window) {
             modifier = Modifier.fillMaxSize().offset(dx.dp, dy.dp),
         ) { i ->
             when (pages.getOrNull(i)) {
-                Page.CLOCK -> ClockPage(now, media, musicActive)
+                Page.CLOCK -> ClockPage(now, media, musicActive) { musicPopup = true }
                 Page.MUSIC -> media?.let { MusicFull(it) }
                 Page.SPLIT -> SplitPage(now, media, musicActive)
                 Page.INFO -> InfoPage()
@@ -206,6 +212,33 @@ fun StandbyRoot(window: Window) {
             )
         }
 
+        // Musik-Fenster über der Uhr
+        AnimatedVisibility(
+            visible = musicPopup && media != null,
+            enter = fadeIn(tween(220)),
+            exit = fadeOut(tween(200)),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .pointerInput(Unit) { detectTapGestures { musicPopup = false } },
+                contentAlignment = Alignment.Center,
+            ) {
+                media?.let {
+                    MusicPopup(
+                        it,
+                        Modifier
+                            .padding(horizontal = 32.dp)
+                            .animateEnterExit(
+                                enter = scaleIn(tween(260), initialScale = 0.88f) + slideInVertically(tween(260)) { h -> h / 6 },
+                                exit = scaleOut(tween(200), targetScale = 0.92f),
+                            ),
+                    )
+                }
+            }
+        }
+
         if (settings) SettingsScreen(onClose = { settings = false })
     }
 }
@@ -239,7 +272,7 @@ private fun TopBar(battery: Int, charging: Boolean, time: LocalDateTime, onBrigh
 }
 
 @Composable
-private fun ClockPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolean) {
+private fun ClockPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolean, onOpenMusic: () -> Unit) {
     val showMini = musicActive && Prefs.miniPlayer && media != null
     Box(Modifier.fillMaxSize()) {
         Column(
@@ -256,7 +289,7 @@ private fun ClockPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolea
             }
         }
         if (showMini && media != null) {
-            MiniPlayer(media, Modifier.align(Alignment.BottomCenter).padding(horizontal = 40.dp, vertical = 16.dp))
+            MiniPlayer(media, onOpenMusic, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
         }
     }
 }
