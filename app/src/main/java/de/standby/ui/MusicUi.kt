@@ -235,24 +235,41 @@ fun MusicCard(info: MediaInfo, modifier: Modifier = Modifier) {
     }
 }
 
-/** Kleine Leiste unter der Uhr. */
+/** Schlanke Leiste unter der Uhr: Titel · Interpret, Fortschritt, „Weiter“. */
 @Composable
 fun MiniPlayer(info: MediaInfo, modifier: Modifier = Modifier) {
     val pos by rememberPosition(info)
-    val shape = RoundedCornerShape(30.dp)
-    Box(modifier.widthIn(max = 640.dp).fillMaxWidth().clip(shape).background(Color.White.copy(alpha = 0.09f))) {
-        Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Cover(info.cover, Modifier.size(60.dp), radius = 14.dp, elevation = 6.dp)
-            Column(Modifier.weight(1f).padding(horizontal = 16.dp)) {
-                Text(info.title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(info.artist, color = Color.White.copy(alpha = 0.6f), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                SeekBar(
-                    progress = if (info.duration > 0) pos.toFloat() / info.duration else 0f,
-                    onSeek = { if (info.duration > 0) MediaRepo.seekTo((it * info.duration).toLong()) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+    val shape = RoundedCornerShape(22.dp)
+    Row(
+        modifier
+            .widthIn(max = 420.dp)
+            .fillMaxWidth()
+            .clip(shape)
+            .background(Color.White.copy(alpha = 0.07f))
+            .padding(start = 18.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    info.title, color = Color.White.copy(alpha = 0.92f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
                 )
+                if (info.artist.isNotBlank()) {
+                    Text(
+                        "  ·  " + info.artist, color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
-            Controls(info, iconSize = 30.dp, gap = 0.dp)
+            Spacer(Modifier.height(6.dp))
+            val prog = if (info.duration > 0) (pos.toFloat() / info.duration).coerceIn(0f, 1f) else 0f
+            Canvas(Modifier.fillMaxWidth().height(3.dp)) {
+                val r = CornerRadius(size.height / 2)
+                drawRoundRect(Color.White.copy(alpha = 0.18f), Offset.Zero, size, r)
+                drawRoundRect(Color.White.copy(alpha = 0.85f), Offset.Zero, Size(size.width * prog, size.height), r)
+            }
         }
+        IconBtn(Ic.NEXT, Color.White.copy(alpha = 0.85f), 20.dp, { MediaRepo.next() }, pad = 10.dp)
     }
 }

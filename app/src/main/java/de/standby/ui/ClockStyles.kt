@@ -31,7 +31,10 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -109,39 +112,57 @@ private fun MinimalClock(time: LocalDateTime, modifier: Modifier) {
 
 private class StrokeLayer(val frac: Float, val color: Color?, val brushIdx: Int = 0, val alpha: Float = 1f)
 
+private val glyphPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+    typeface = android.graphics.Typeface.create(android.graphics.Typeface.SANS_SERIF, 700, false)
+}
+
+/**
+ * Umriss einer Ziffer als Pfad. Systemschriften bestehen oft aus überlappenden Teilformen –
+ * beim reinen Nachzeichnen entstehen dann innere Linien (z. B. in der 3). Die Vereinigung
+ * der Formen ergibt einen sauberen Außenumriss.
+ */
+private fun glyphPath(ch: Char): android.graphics.Path {
+    val raw = android.graphics.Path()
+    glyphPaint.getTextPath(ch.toString(), 0, 1, 0f, 0f, raw)
+    val clean = android.graphics.Path()
+    return if (clean.op(raw, android.graphics.Path(), android.graphics.Path.Op.UNION)) clean else raw
+}
+
 @Composable
 private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
-    val tm = rememberTextMeasurer()
     val pal = currentPalette()
     val bg = currentBackdrop().color
     val digits = hourString(time) + minuteString(time)
     Canvas(modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
-        val weight = FontWeight.Bold
-        // Referenzmessung, daraus die passende Schriftgröße für Breite und Höhe.
-        val ref = tm.measure("0", TextStyle(fontSize = 100.sp, fontWeight = weight))
-        val refW = ref.size.width.toFloat()
-        val refH = ref.size.height.toFloat()
-        val totalRefW = refW * 4f + refW * 0.62f
-        val s = min(h * 0.82f / refH, w * 0.94f / totalRefW)
-        val fontSp = (100f * s).sp
-        val fp = fontSp.toPx()
-        val style = TextStyle(fontSize = fontSp, fontWeight = weight)
-        val cell = tm.measure("0", style).size.width.toFloat()
+        // Referenzmaße bei Schriftgröße 100, daraus die passende Größe.
+        glyphPaint.textSize = 100f
+        val refW = glyphPaint.measureText("0")
+        val rb = android.graphics.Rect()
+        glyphPaint.getTextBounds("0", 0, 1, rb)
+        val refCap = rb.height().toFloat()
+        val s = min(h * 0.62f / refCap, w * 0.92f / (refW * 4.62f))
+        val fp = 100f * s
+        glyphPaint.textSize = fp
+        val cell = refW * s
+        val cap = refCap * s
         val colonW = cell * 0.62f
-        val total = cell * 4f + colonW
-        val startX = (w - total) / 2f
-        val sample = tm.measure("0", style)
-        val topY = (h - sample.size.height) / 2f
+        val startX = (w - (cell * 4f + colonW)) / 2f
+        val baseline = (h + cap) / 2f
 
+        val paths = digits.map { ch ->
+            val p = glyphPath(ch)
+            val adv = glyphPaint.measureText(ch.toString())
+            Triple(p.asComposePath(), adv, ch)
+        }
         fun cellX(i: Int) = startX + i * cell + if (i >= 2) colonW else 0f
 
         val layers: List<StrokeLayer> = if (neon) {
             listOf(
-                StrokeLayer(0.16f, Color.White, alpha = 0.05f),
-                StrokeLayer(0.11f, Color.White, alpha = 0.09f),
-                StrokeLayer(0.07f, Color.White, alpha = 0.16f),
+                StrokeLayer(0.14f, Color.White, alpha = 0.04f),
+                StrokeLayer(0.095f, Color.White, alpha = 0.07f),
+                StrokeLayer(0.06f, Color.White, alpha = 0.13f),
             )
         } else {
             listOf(
@@ -154,21 +175,21 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
             )
         }
 
-        fun drawDigits(l: StrokeLayer, fill: Boolean, fillColor: Color = bg) {
-            for (i in 0 until 4) {
-                val lay = tm.measure(digits[i].toString(), style)
-                val x = cellX(i) + (cell - lay.size.width) / 2f
-                val tl = Offset(x, topY)
-                val drawStyle = if (fill) Fill else Stroke(width = fp * l.frac, join = StrokeJoin.Round)
-                if (fill) {
-                    drawText(lay, color = fillColor, topLeft = tl, drawStyle = drawStyle)
-                } else if (l.color != null) {
-                    drawText(lay, color = l.color.copy(alpha = l.alpha), topLeft = tl, drawStyle = drawStyle)
-                } else {
-                    val c = when (l.brushIdx) { 0 -> pal.c1; 1 -> pal.c2; else -> pal.c3 }
-                    val c2 = when (l.brushIdx) { 0 -> pal.c2; 1 -> pal.c3; else -> pal.c1 }
-                    val brush = Brush.linearGradient(listOf(c, c2), start = Offset(x, topY), end = Offset(x + cell, topY + sample.size.height))
-                    drawText(lay, brush = brush, topLeft = tl, drawStyle = drawStyle)
+        fun drawDigits(l: StrokeLayer, fill: Boolean) {
+            paths.forEachIndexed { i, (path, adv, _) ->
+                val x = cellX(i) + (cell - adv) / 2f
+                translate(x, baseline) {
+                    val st = if (fill) Fill else Stroke(width = fp * l.frac, join = StrokeJoin.Round, cap = StrokeCap.Round)
+                    when {
+                        fill -> drawPath(path, bg, style = st)
+                        l.color != null -> drawPath(path, l.color.copy(alpha = l.alpha), style = st)
+                        else -> {
+                            val c = when (l.brushIdx) { 0 -> pal.c1; 1 -> pal.c2; else -> pal.c3 }
+                            val c2 = when (l.brushIdx) { 0 -> pal.c2; 1 -> pal.c3; else -> pal.c1 }
+                            val brush = Brush.linearGradient(listOf(c, c2), start = Offset(0f, -cap), end = Offset(cell, 0f))
+                            drawPath(path, brush, style = st)
+                        }
+                    }
                 }
             }
         }
@@ -176,20 +197,23 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
         for (l in layers) drawDigits(l, fill = false)
         if (neon) {
             drawDigits(StrokeLayer(0f, null), fill = true)
-            drawDigits(StrokeLayer(0.022f, Color.White, alpha = 0.95f), fill = false)
+            // Doppelte Leuchtlinie: heller Kern + feiner Innenschimmer
+            drawDigits(StrokeLayer(0.034f, Color.White, alpha = 0.22f), fill = false)
+            drawDigits(StrokeLayer(0.016f, Color.White, alpha = 0.97f), fill = false)
         }
 
         // Doppelpunkt
         val cx = startX + cell * 2f + colonW / 2f
-        val cy = h / 2f
-        val gap = fp * 0.24f
-        val r = fp * 0.085f
+        val cy = baseline - cap / 2f
+        val gap = cap * 0.22f
+        val r = fp * 0.075f
         for (dy in listOf(-gap, gap)) {
             val c = Offset(cx, cy + dy)
             if (neon) {
-                drawCircle(Color.White.copy(alpha = 0.08f), r * 1.4f, c, style = Stroke(fp * 0.08f))
+                drawCircle(Color.White.copy(alpha = 0.07f), r * 1.5f, c, style = Stroke(fp * 0.07f))
                 drawCircle(bg, r, c)
-                drawCircle(Color.White.copy(alpha = 0.95f), r, c, style = Stroke(fp * 0.022f))
+                drawCircle(Color.White.copy(alpha = 0.22f), r, c, style = Stroke(fp * 0.034f))
+                drawCircle(Color.White.copy(alpha = 0.97f), r, c, style = Stroke(fp * 0.016f))
             } else {
                 drawCircle(pal.colon, r * 1.15f, c, style = Stroke(fp * 0.026f))
                 drawCircle(pal.colon.copy(alpha = 0.75f), r * 0.78f, c, style = Stroke(fp * 0.016f))

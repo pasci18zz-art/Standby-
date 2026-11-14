@@ -243,7 +243,7 @@ private fun ClockPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolea
     val showMini = musicActive && Prefs.miniPlayer && media != null
     Box(Modifier.fillMaxSize()) {
         Column(
-            Modifier.fillMaxSize().padding(top = 28.dp, bottom = if (showMini) 112.dp else 28.dp),
+            Modifier.fillMaxSize().padding(top = 28.dp, bottom = if (showMini) 72.dp else 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             ClockFace(Prefs.clockStyle, now, Modifier.weight(1f).fillMaxWidth().padding(horizontal = 28.dp))
@@ -256,7 +256,7 @@ private fun ClockPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolea
             }
         }
         if (showMini && media != null) {
-            MiniPlayer(media, Modifier.align(Alignment.BottomCenter).padding(horizontal = 40.dp, vertical = 20.dp))
+            MiniPlayer(media, Modifier.align(Alignment.BottomCenter).padding(horizontal = 40.dp, vertical = 16.dp))
         }
     }
 }
