@@ -2,7 +2,9 @@ package de.standby
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import kotlin.reflect.KProperty
 
