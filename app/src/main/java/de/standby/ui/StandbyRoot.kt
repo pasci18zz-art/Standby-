@@ -58,6 +58,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.standby.Prefs
+import de.standby.CoverTheme
+import de.standby.Palette
 import de.standby.currentBackdrop
 import de.standby.data.Planner
 import de.standby.data.Weather
@@ -181,10 +183,48 @@ fun StandbyRoot(window: Window) {
     val dx = if (Prefs.pixelShift) ((step * 37) % 13 - 6) else 0
     val dy = if (Prefs.pixelShift) ((step * 53) % 9 - 4) else 0
 
+    // Cover-Farben: färben Hintergrund (Verlauf von rechts) und Uhr
+    val coverPal by rememberCoverPalette(media?.cover)
+    val themed = Prefs.coverTheme && musicActive && media != null
+    val glowTint by animateColorAsState(if (themed) coverPal.tint else bg, tween(1200), label = "glowtint")
+    val glowAlpha by androidx.compose.animation.core.animateFloatAsState(if (themed) 1f else 0f, tween(1200), label = "glowalpha")
+    val a1 by animateColorAsState(coverPal.c1, tween(1000), label = "a1")
+    val a2 by animateColorAsState(coverPal.c2, tween(1000), label = "a2")
+    val a3 by animateColorAsState(coverPal.c3, tween(1000), label = "a3")
+    val a4 by animateColorAsState(coverPal.colon, tween(1000), label = "a4")
+    androidx.compose.runtime.SideEffect {
+        CoverTheme.palette = if (themed) {
+            Palette("cover", "Cover", a1, a2, a3, a4, spectrum = listOf(a1, lerp(a1, a2, 0.5f), a2, lerp(a2, a3, 0.5f), a3))
+        } else null
+    }
+
     Box(
         Modifier
             .fillMaxSize()
             .background(bg)
+            .drawBehind {
+                if (glowAlpha > 0.01f) {
+                    val c = lerp(glowTint, Color.White, 0.06f)
+                    // Farbe kommt von rechts herein und reicht über die Bildmitte hinaus
+                    drawRect(
+                        Brush.horizontalGradient(
+                            0f to Color.Transparent,
+                            0.30f to c.copy(alpha = 0.10f * glowAlpha),
+                            0.65f to c.copy(alpha = 0.55f * glowAlpha),
+                            1f to c.copy(alpha = 0.95f * glowAlpha),
+                        ),
+                    )
+                    drawCircle(
+                        Brush.radialGradient(
+                            listOf(lerp(c, Color.White, 0.18f).copy(alpha = 0.40f * glowAlpha), Color.Transparent),
+                            center = Offset(size.width * 0.92f, size.height * 0.35f),
+                            radius = size.width * 0.5f,
+                        ),
+                        radius = size.width * 0.5f,
+                        center = Offset(size.width * 0.92f, size.height * 0.35f),
+                    )
+                }
+            }
             .pointerInput(Unit) { detectTapGestures(onTap = { overlay = !overlay }) },
     ) {
         HorizontalPager(

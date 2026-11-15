@@ -189,6 +189,7 @@ fun SettingsScreen(onClose: () -> Unit) {
                 SwitchRow("Verspielte Linien (mit Lücken, wie Daily Board)", Prefs.playfulLines) { Prefs.playfulLines = it }
                 Text("Hintergrund", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
                 ColorDots(backdrops.map { it.id to listOf(it.color) }, Prefs.background) { Prefs.background = it }
+                SwitchRow("Farben vom Cover übernehmen (Uhr & Hintergrund)", Prefs.coverTheme) { Prefs.coverTheme = it }
                 SwitchRow("24-Stunden-Format", Prefs.use24h) { Prefs.use24h = it }
                 SwitchRow("Sekunden anzeigen (Minimal-Uhr)", Prefs.showSeconds) { Prefs.showSeconds = it }
                 SwitchRow("Datum unter der Uhr", Prefs.showDate) { Prefs.showDate = it }

@@ -55,22 +55,8 @@ private val dashDateFmt = DateTimeFormatter.ofPattern("EEEE, d. MMMM", Locale.GE
 @Composable
 fun DashboardPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolean) {
     val showMusic = Prefs.dashMusic && musicActive && media != null
-    val coverTint by rememberCoverColor(if (showMusic) media?.cover else null)
-    val base = currentBackdrop().color
-    val tint by animateColorAsState(if (showMusic) coverTint else base, tween(1200), label = "dashtint")
-    val inner = lerp(tint, Color.White, 0.04f)
-    val outer = lerp(tint, Color.Black, 0.88f)
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    listOf(lerp(inner, Color.Black, 0.15f), lerp(tint, Color.Black, 0.6f), outer),
-                    radius = 1600f,
-                ),
-            ),
-    ) {
+    Box(Modifier.fillMaxSize()) {
         val musicColumn: @Composable (Modifier) -> Unit = { m ->
             when {
                 showMusic && media != null -> MusicColumn(media, m)

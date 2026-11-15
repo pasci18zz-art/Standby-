@@ -61,6 +61,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -90,6 +92,34 @@ fun rememberCoverColor(bmp: Bitmap?): State<Color> = produceState(FallbackTint, 
             val argb = p.getDarkVibrantColor(p.getDarkMutedColor(p.getMutedColor(p.getDominantColor(0xFF2B2325.toInt()))))
             Color(argb)
         }.getOrDefault(FallbackTint)
+    }
+}
+
+/** Farben aus dem Cover: dunkle Tönung für Hintergründe, helle Akzente für Uhr und Linien. */
+class CoverPal(val tint: Color, val c1: Color, val c2: Color, val c3: Color, val colon: Color)
+
+private val DefaultCoverPal = CoverPal(FallbackTint, Color(0xFF8B5CF6), Color(0xFFE879F9), Color(0xFFFBA8C8), Color(0xFFF25C54))
+
+private fun brighten(argb: Int): Color {
+    val c = Color(argb)
+    val l = c.luminance()
+    return if (l < 0.30f) lerp(c, Color.White, (0.62f - l).coerceIn(0f, 0.6f)) else c
+}
+
+@Composable
+fun rememberCoverPalette(bmp: Bitmap?): State<CoverPal> = produceState(DefaultCoverPal, bmp) {
+    value = withContext(Dispatchers.Default) {
+        if (bmp == null) DefaultCoverPal
+        else runCatching {
+            val p = Palette.from(bmp).maximumColorCount(24).generate()
+            val dom = p.getDominantColor(0xFF8B5CF6.toInt())
+            val tint = Color(p.getDarkVibrantColor(p.getDarkMutedColor(p.getMutedColor(dom))))
+            val c1 = brighten(p.getVibrantColor(dom))
+            val c2 = brighten(p.getLightVibrantColor(p.getLightMutedColor(c1.toArgb())))
+            val c3 = lerp(brighten(p.getLightMutedColor(p.getMutedColor(dom))), Color.White, 0.2f)
+            val colon = brighten(p.getDarkVibrantColor(p.getVibrantColor(dom)))
+            CoverPal(tint, c1, c2, c3, lerp(colon, c2, 0.3f))
+        }.getOrDefault(DefaultCoverPal)
     }
 }
 

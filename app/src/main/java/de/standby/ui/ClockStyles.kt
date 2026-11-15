@@ -54,7 +54,9 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import de.standby.CoverTheme
 import de.standby.Prefs
+import androidx.compose.ui.graphics.BlendMode
 import de.standby.currentBackdrop
 import de.standby.currentPalette
 import java.time.LocalDateTime
@@ -99,7 +101,7 @@ private fun MinimalClock(time: LocalDateTime, modifier: Modifier) {
             style = TextStyle(
                 fontSize = if (Prefs.showSeconds) fs * 0.78f else fs,
                 fontWeight = FontWeight.Light,
-                color = Color.White,
+                color = CoverTheme.palette?.takeIf { Prefs.coverTheme }?.let { lerp(Color.White, it.c2, 0.45f) } ?: Color.White,
                 textAlign = TextAlign.Center,
                 platformStyle = PlatformTextStyle(includeFontPadding = false),
             ),
@@ -112,7 +114,7 @@ private fun MinimalClock(time: LocalDateTime, modifier: Modifier) {
 // Linien- und Neon-Uhr (gezeichnete Konturen)
 // ---------------------------------------------------------------------------------------------
 
-private class StrokeLayer(val frac: Float, val color: Color?, val brushIdx: Int = 0, val alpha: Float = 1f)
+private class StrokeLayer(val frac: Float, val color: Color?, val brushIdx: Int = 0, val alpha: Float = 1f, val clear: Boolean = false)
 
 private val glyphPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
     typeface = android.graphics.Typeface.create(android.graphics.Typeface.SANS_SERIF, 700, false)
@@ -133,9 +135,9 @@ private fun glyphPath(ch: Char): android.graphics.Path {
 @Composable
 private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
     val pal = currentPalette()
-    val bg = currentBackdrop().color
+    val neonCol = if (CoverTheme.palette != null && Prefs.coverTheme) lerp(pal.c1, Color.White, 0.55f) else Color.White
     val digits = hourString(time) + minuteString(time)
-    Canvas(modifier.fillMaxSize()) {
+    Canvas(modifier.fillMaxSize().graphicsLayer(compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen)) {
         val w = size.width
         val h = size.height
         // Referenzmaße bei Schriftgröße 100, daraus die passende Größe.
@@ -162,18 +164,18 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
 
         val layers: List<StrokeLayer> = if (neon) {
             listOf(
-                StrokeLayer(0.14f, Color.White, alpha = 0.04f),
-                StrokeLayer(0.095f, Color.White, alpha = 0.07f),
-                StrokeLayer(0.06f, Color.White, alpha = 0.13f),
+                StrokeLayer(0.14f, neonCol, alpha = 0.04f),
+                StrokeLayer(0.095f, neonCol, alpha = 0.07f),
+                StrokeLayer(0.06f, neonCol, alpha = 0.13f),
             )
         } else {
             listOf(
                 StrokeLayer(0.150f, null, 0),
-                StrokeLayer(0.120f, bg),
+                StrokeLayer(0.120f, null, clear = true),
                 StrokeLayer(0.100f, null, 1),
-                StrokeLayer(0.072f, bg),
+                StrokeLayer(0.072f, null, clear = true),
                 StrokeLayer(0.055f, null, 2),
-                StrokeLayer(0.028f, bg),
+                StrokeLayer(0.028f, null, clear = true),
             )
         }
 
@@ -194,7 +196,7 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
                     } else null
                     val st = if (fill) Fill else Stroke(width = fp * l.frac, join = StrokeJoin.Round, cap = StrokeCap.Round, pathEffect = effect)
                     when {
-                        fill -> drawPath(path, bg, style = st)
+                        fill || l.clear -> drawPath(path, Color.Black, style = st, blendMode = BlendMode.Clear)
                         l.color != null -> drawPath(path, l.color.copy(alpha = l.alpha), style = st)
                         else -> {
                             // Verlauf über das ganze Farbspektrum, je Linie und Ziffer verschoben.
@@ -212,8 +214,8 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
         if (neon) {
             drawDigits(StrokeLayer(0f, null), fill = true)
             // Doppelte Leuchtlinie: heller Kern + feiner Innenschimmer
-            drawDigits(StrokeLayer(0.034f, Color.White, alpha = 0.22f), fill = false)
-            drawDigits(StrokeLayer(0.016f, Color.White, alpha = 0.97f), fill = false)
+            drawDigits(StrokeLayer(0.034f, neonCol, alpha = 0.22f), fill = false)
+            drawDigits(StrokeLayer(0.016f, neonCol, alpha = 0.97f), fill = false)
         }
 
         // Doppelpunkt
@@ -224,10 +226,10 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
         for (dy in listOf(-gap, gap)) {
             val c = Offset(cx, cy + dy)
             if (neon) {
-                drawCircle(Color.White.copy(alpha = 0.07f), r * 1.5f, c, style = Stroke(fp * 0.07f))
-                drawCircle(bg, r, c)
-                drawCircle(Color.White.copy(alpha = 0.22f), r, c, style = Stroke(fp * 0.034f))
-                drawCircle(Color.White.copy(alpha = 0.97f), r, c, style = Stroke(fp * 0.016f))
+                drawCircle(neonCol.copy(alpha = 0.07f), r * 1.5f, c, style = Stroke(fp * 0.07f))
+                drawCircle(Color.Black, r, c, blendMode = BlendMode.Clear)
+                drawCircle(neonCol.copy(alpha = 0.22f), r, c, style = Stroke(fp * 0.034f))
+                drawCircle(neonCol.copy(alpha = 0.97f), r, c, style = Stroke(fp * 0.016f))
             } else {
                 val e1 = if (playful) PathEffect.dashPathEffect(floatArrayOf(r * 5.4f, r * 0.55f), r * (if (dy < 0) 0.8f else 3.1f)) else null
                 val e2 = if (playful) PathEffect.dashPathEffect(floatArrayOf(r * 3.6f, r * 0.45f), r * (if (dy < 0) 2.2f else 0.4f)) else null
@@ -282,7 +284,7 @@ fun FlipCard(value: String, modifier: Modifier = Modifier) {
             fontWeight = FontWeight.ExtraBold,
             fontSize = fontSp,
             lineHeight = fontSp,
-            color = Color(0xFFF2F3F7),
+            color = CoverTheme.palette?.takeIf { Prefs.coverTheme }?.let { lerp(Color(0xFFF2F3F7), it.c2, 0.45f) } ?: Color(0xFFF2F3F7),
             platformStyle = PlatformTextStyle(includeFontPadding = false),
             lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
         )

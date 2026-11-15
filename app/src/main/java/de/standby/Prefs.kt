@@ -62,6 +62,7 @@ object Prefs {
     var use24h by P("use24h", true)
     var showSeconds by P("show_seconds", false)
     var showDate by P("show_date", true)
+    var coverTheme by P("cover_theme", true)
 
     // Seiten
     var miniPlayer by P("mini_player", true)
@@ -140,5 +141,12 @@ fun customPalette(): Palette {
     )
 }
 
-fun currentPalette() = if (Prefs.palette == "custom") customPalette() else palettes.firstOrNull { it.id == Prefs.palette } ?: palettes[0]
+/** Farben des aktuellen Covers; solange gesetzt, färben sie Uhr und Hintergrund. */
+object CoverTheme {
+    var palette by androidx.compose.runtime.mutableStateOf<Palette?>(null)
+}
+
+fun currentPalette(): Palette = CoverTheme.palette?.takeIf { Prefs.coverTheme } ?: chosenPalette()
+
+private fun chosenPalette() = if (Prefs.palette == "custom") customPalette() else palettes.firstOrNull { it.id == Prefs.palette } ?: palettes[0]
 fun currentBackdrop() = backdrops.firstOrNull { it.id == Prefs.background } ?: backdrops[0]
