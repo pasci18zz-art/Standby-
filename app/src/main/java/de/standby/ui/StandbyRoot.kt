@@ -155,6 +155,19 @@ fun StandbyRoot(window: Window) {
     var settings by remember { mutableStateOf(false) }
     var musicPopup by remember { mutableStateOf(false) }
     if (!musicActive && musicPopup) musicPopup = false
+    var popupAuto by remember { mutableStateOf(false) }
+
+    // Neues Lied: Fenster für die eingestellte Zeit öffnen, dann wieder schließen.
+    val trackKey = media?.takeIf { it.title.isNotBlank() }?.let { it.pkg + "|" + it.title + "|" + it.artist }
+    LaunchedEffect(trackKey) {
+        if (trackKey == null || !Prefs.popupAuto || settings) return@LaunchedEffect
+        if (pages.getOrNull(pager.currentPage) == Page.MUSIC) return@LaunchedEffect
+        if (musicPopup && !popupAuto) return@LaunchedEffect // vom Nutzer selbst geöffnet
+        popupAuto = true
+        musicPopup = true
+        delay(Prefs.popupSeconds * 1000L)
+        if (popupAuto) musicPopup = false
+    }
     LaunchedEffect(overlay) {
         if (overlay) {
             delay(5000)
@@ -179,7 +192,7 @@ fun StandbyRoot(window: Window) {
             modifier = Modifier.fillMaxSize().offset(dx.dp, dy.dp),
         ) { i ->
             when (pages.getOrNull(i)) {
-                Page.CLOCK -> ClockPage(now, media, musicActive) { musicPopup = true }
+                Page.CLOCK -> ClockPage(now, media, musicActive) { popupAuto = false; musicPopup = true }
                 Page.MUSIC -> media?.let { MusicPage(it) }
                 Page.SPLIT -> SplitPage(now, media, musicActive)
                 Page.INFO -> InfoPage()

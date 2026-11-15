@@ -205,6 +205,11 @@ fun SettingsScreen(onClose: () -> Unit) {
                     }
                 }
                 SwitchRow("Mini-Player unter der Uhr", Prefs.miniPlayer) { Prefs.miniPlayer = it }
+                SwitchRow("Musik-Fenster bei neuem Lied automatisch öffnen", Prefs.popupAuto) { Prefs.popupAuto = it }
+                if (Prefs.popupAuto) {
+                    Text("Offen bleiben für …", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
+                    Chips(listOf(5, 10, 15, 20, 30).map { it.toString() to "$it Sek." }, Prefs.popupSeconds.toString()) { Prefs.popupSeconds = it.toInt() }
+                }
             }
 
             Section("Seiten") {

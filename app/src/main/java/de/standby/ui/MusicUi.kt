@@ -38,6 +38,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.animation.core.Animatable
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -309,10 +314,14 @@ private fun rememberQueueArt(q: QueueEntry): State<Bitmap?> = produceState(q.ico
 
 /** Linke Spalte: Cover, Titel/Interpret zentriert, Spulbalken, Steuerung. */
 @Composable
-private fun PlayerColumn(info: MediaInfo, coverSize: Dp, scale: Float, modifier: Modifier = Modifier) {
+private fun PlayerColumn(info: MediaInfo, coverSize: Dp, scale: Float, modifier: Modifier = Modifier, flex: Boolean = false) {
     val pos by rememberPosition(info)
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Cover(info.cover, Modifier.size(coverSize), radius = 22.dp * scale, elevation = 14.dp)
+        Cover(
+            info.cover,
+            if (flex) Modifier.weight(1f, fill = false).aspectRatio(1f) else Modifier.size(coverSize),
+            radius = 22.dp * scale.coerceAtMost(1.2f), elevation = 14.dp,
+        )
         Spacer(Modifier.height(10.dp * scale))
         Text(
             info.title, color = Color.White, fontSize = 17.sp * scale, fontWeight = FontWeight.Bold,
@@ -329,9 +338,44 @@ private fun PlayerColumn(info: MediaInfo, coverSize: Dp, scale: Float, modifier:
         )
         if (scale > 1.05f) TimeRow(info, pos, Modifier.fillMaxWidth(), size = 13)
         Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            val gap = if (flex) 14.dp else 0.dp
             IconBtn(Ic.PREV, Color.White, 22.dp * scale, { MediaRepo.previous() }, pad = 9.dp * scale)
+            Spacer(Modifier.width(gap))
             IconBtn(if (info.playing) Ic.PAUSE else Ic.PLAY, Color.White, 24.dp * scale, { MediaRepo.playPause() }, pad = 9.dp * scale)
+            Spacer(Modifier.width(gap))
             IconBtn(Ic.NEXT, Color.White, 22.dp * scale, { MediaRepo.next() }, pad = 9.dp * scale)
+        }
+    }
+}
+
+/** Ein Eintrag der Warteschlange: kommt von links herein, verschwindet nach rechts, wenn das Lied dran war. */
+@Composable
+private fun QueueRow(q: QueueEntry, leaving: Boolean, scale: Float, modifier: Modifier = Modifier) {
+    val art by rememberQueueArt(q)
+    val enter = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { enter.animateTo(1f, tween(500)) }
+    val exit by animateFloatAsState(if (leaving) 1f else 0f, tween(450), label = "qexit")
+    Row(
+        modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                translationX = -(1f - enter.value) * 70.dp.toPx() + exit * size.width * 0.7f
+                alpha = enter.value * (1f - exit)
+            }
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { MediaRepo.playQueueItem(q.id) }
+            .padding(horizontal = 6.dp, vertical = 5.dp * scale),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        art?.let {
+            Cover(it, Modifier.size(38.dp * scale), radius = 8.dp, elevation = 0.dp)
+            Spacer(Modifier.width(10.dp))
+        }
+        Column {
+            Text(q.title, color = Color.White, fontSize = 13.sp * scale, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (q.subtitle.isNotBlank()) {
+                Text(q.subtitle, color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp * scale, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
 }
@@ -339,36 +383,33 @@ private fun PlayerColumn(info: MediaInfo, coverSize: Dp, scale: Float, modifier:
 /** Rechte Spalte: „Als Nächstes“ – Cover nur, wenn der Player eines herausgibt. */
 @Composable
 private fun QueueColumn(info: MediaInfo, scale: Float, modifier: Modifier = Modifier) {
+    val next = info.upcoming()
+    val ids = next.map { it.id }
+    val displayed = remember { mutableStateListOf<QueueEntry>() }
+    val leaving = remember { mutableStateMapOf<Long, Boolean>() }
+    LaunchedEffect(ids) {
+        val nextIds = ids.toSet()
+        val gone = displayed.filter { it.id !in nextIds }
+        gone.forEach { leaving[it.id] = true }
+        // Das gerade gespielte Lied (vorher ganz oben) läuft nach rechts hinaus, die anderen rücken nach.
+        val rebuilt = gone + next
+        displayed.clear()
+        displayed.addAll(rebuilt)
+        if (gone.isNotEmpty()) {
+            delay(500)
+            displayed.removeAll { it.id in leaving && leaving[it.id] == true && it.id !in nextIds }
+            gone.forEach { leaving.remove(it.id) }
+        }
+    }
     Column(modifier) {
         Text("ALS NÄCHSTES", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp * scale, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(8.dp))
-        val next = info.upcoming()
-        if (next.isEmpty()) {
+        if (next.isEmpty() && displayed.isEmpty()) {
             Text("Der Player teilt die Warteschlange gerade nicht.", color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp * scale)
-            return@Column
         }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp * scale)) {
-            items(next, key = { it.id }) { q ->
-                val art by rememberQueueArt(q)
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable { MediaRepo.playQueueItem(q.id) }
-                        .padding(horizontal = 6.dp, vertical = 5.dp * scale),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    art?.let {
-                        Cover(it, Modifier.size(38.dp * scale), radius = 8.dp, elevation = 0.dp)
-                        Spacer(Modifier.width(10.dp))
-                    }
-                    Column {
-                        Text(q.title, color = Color.White, fontSize = 13.sp * scale, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        if (q.subtitle.isNotBlank()) {
-                            Text(q.subtitle, color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp * scale, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
-                }
+            items(displayed.toList(), key = { it.id }) { q ->
+                QueueRow(q, leaving[q.id] == true, scale, Modifier.animateItem())
             }
         }
     }
@@ -398,20 +439,19 @@ fun MusicPopup(info: MediaInfo, modifier: Modifier = Modifier) {
     }
 }
 
-/** Eigene Musik-Seite im selben Stil wie das Fenster, bildschirmfüllend. */
+/** Eigene Musik-Seite im selben Stil wie das Fenster, bildschirmfüllend. Das Cover schrumpft zuerst – die Tasten bleiben groß. */
 @Composable
 fun MusicPage(info: MediaInfo, modifier: Modifier = Modifier) {
     val tint by rememberCoverColor(info.cover)
     val animTint by animateColorAsState(tint, tween(900), label = "pgtint")
-    BoxWithConstraints(
+    Box(
         modifier
             .fillMaxSize()
             .background(Brush.linearGradient(listOf(lerp(animTint, Color.Black, 0.2f), Color(0xFF0E0E12)))),
     ) {
-        val cover = (maxHeight - 190.dp).coerceIn(150.dp, 300.dp)
-        Row(Modifier.fillMaxSize().padding(horizontal = 36.dp, vertical = 24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                PlayerColumn(info, coverSize = cover, scale = 1.2f, modifier = Modifier.width(cover + 90.dp))
+        Row(Modifier.fillMaxSize().padding(horizontal = 36.dp, vertical = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                PlayerColumn(info, coverSize = 0.dp, scale = 1.45f, flex = true, modifier = Modifier.fillMaxHeight().widthIn(max = 460.dp))
             }
             Box(Modifier.width(1.dp).fillMaxHeight(0.8f).background(Color.White.copy(alpha = 0.08f)))
             QueueColumn(info, scale = 1.2f, modifier = Modifier.weight(0.9f).fillMaxHeight().padding(start = 28.dp, top = 12.dp))

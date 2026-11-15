@@ -65,6 +65,8 @@ object Prefs {
 
     // Seiten
     var miniPlayer by P("mini_player", true)
+    var popupAuto by P("popup_auto", true)
+    var popupSeconds by P("popup_seconds", 10)
     var pageSplit by P("page_split", true)
     var pageInfo by P("page_info", true)
 
