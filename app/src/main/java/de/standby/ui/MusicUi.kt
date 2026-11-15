@@ -382,7 +382,7 @@ private fun QueueRow(q: QueueEntry, leaving: Boolean, scale: Float, modifier: Mo
 
 /** Rechte Spalte: „Als Nächstes“ – Cover nur, wenn der Player eines herausgibt. */
 @Composable
-private fun QueueColumn(info: MediaInfo, scale: Float, modifier: Modifier = Modifier) {
+fun QueueColumn(info: MediaInfo, scale: Float, modifier: Modifier = Modifier) {
     val next = info.upcoming()
     val ids = next.map { it.id }
     val displayed = remember { mutableStateListOf<QueueEntry>() }

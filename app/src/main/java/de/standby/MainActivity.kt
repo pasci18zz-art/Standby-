@@ -20,6 +20,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Prefs.init(this)
         Planner.init(this)
+        if (!Prefs.dashInit) {
+            Prefs.dashInit = true
+            if (resources.configuration.smallestScreenWidthDp >= 600) {
+                Prefs.pageDash = true
+                Prefs.pageSplit = false
+            }
+        }
         enableEdgeToEdge()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         hideBars()

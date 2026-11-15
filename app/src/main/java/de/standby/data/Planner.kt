@@ -50,6 +50,20 @@ data class PExam(
     val deleted: Boolean = false,
 )
 
+@Serializable
+data class PStudy(
+    val id: String = "",
+    val subjectId: String? = null,
+    val startedAt: Long = 0,
+    val elapsedMs: Long = 0,
+    val runningSince: Long? = null,
+    val finished: Boolean = false,
+    val deleted: Boolean = false,
+) {
+    val isRunning: Boolean get() = runningSince != null && !finished
+    fun totalMs(now: Long): Long = elapsedMs + (runningSince?.let { (now - it).coerceAtLeast(0) } ?: 0L)
+}
+
 data class PlannerData(
     val tasks: List<PTask> = emptyList(),
     val exams: List<PExam> = emptyList(),
@@ -63,6 +77,9 @@ data class PlannerData(
  */
 object Planner {
     val data = MutableStateFlow(PlannerData())
+
+    /** Zuletzt geänderte Lernsessions (für die Lernzeit heute). */
+    val study = MutableStateFlow<List<PStudy>>(emptyList())
     val account = MutableStateFlow<String?>(null)
 
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
@@ -188,6 +205,31 @@ object Planner {
         } catch (e: Exception) {
             data.value = data.value.copy(error = "Keine Verbindung")
         }
+    }
+
+    /** Holt nur die letzten Lernsessions – leicht genug, um jede Minute aufgerufen zu werden. */
+    suspend fun refreshStudy() = withContext(Dispatchers.IO) {
+        if (account.value == null || !configured) return@withContext
+        try {
+            val token = validToken() ?: return@withContext
+            val q = "/rest/v1/records?select=data&type=eq.study&deleted=eq.false&order=server_updated_at.desc&limit=100"
+            val (code, text) = http("GET", q, null, token)
+            if (code !in 200..299) return@withContext
+            val list = (json.parseToJsonElement(text) as JsonArray).mapNotNull { r ->
+                val d = r.jsonObject["data"] as? JsonObject ?: return@mapNotNull null
+                runCatching { json.decodeFromJsonElement(PStudy.serializer(), d) }.getOrNull()
+            }.filter { !it.deleted }
+            study.value = list
+        } catch (_: Exception) {
+        }
+    }
+
+    /** Lernzeit heute in Millisekunden (inkl. laufender Session) und ob gerade eine läuft. */
+    fun studyToday(list: List<PStudy>, nowMs: Long): Pair<Long, PStudy?> {
+        val zone = java.time.ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val mine = list.filter { java.time.Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() == today || it.isRunning }
+        return mine.sumOf { it.totalMs(nowMs) } to mine.firstOrNull { it.isRunning }
     }
 
     private fun parse(rows: JsonArray): PlannerData {

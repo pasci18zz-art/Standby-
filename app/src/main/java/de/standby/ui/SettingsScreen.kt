@@ -212,6 +212,20 @@ fun SettingsScreen(onClose: () -> Unit) {
                 }
             }
 
+            Section("Tablet-Startbild") {
+                Text("Eigene Startseite aus Bausteinen: Uhr, Datum, Wetter, Lernzeit, Musik und Warteschlange – jeden einzeln ein- und ausschaltbar.", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
+                SwitchRow("Startbild als erste Seite", Prefs.pageDash) { Prefs.pageDash = it }
+                if (Prefs.pageDash) {
+                    SwitchRow("Uhr", Prefs.dashClock) { Prefs.dashClock = it }
+                    SwitchRow("Datum", Prefs.dashDate) { Prefs.dashDate = it }
+                    SwitchRow("Wetter", Prefs.dashWeather) { Prefs.dashWeather = it }
+                    SwitchRow("Lernzeit (Klappuhr aus dem Schulplaner)", Prefs.dashStudy) { Prefs.dashStudy = it }
+                    SwitchRow("Musik mit Cover und Steuerung", Prefs.dashMusic) { Prefs.dashMusic = it }
+                    SwitchRow("Warteschlange", Prefs.dashQueue) { Prefs.dashQueue = it }
+                    Chips(listOf("right" to "Musik rechts", "left" to "Musik links"), if (Prefs.dashMusicRight) "right" else "left") { Prefs.dashMusicRight = it == "right" }
+                }
+            }
+
             Section("Seiten") {
                 Text("Zur Seite wischen: Uhr → Musik (nur wenn etwas läuft) → Uhr + Musik → Infos", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
                 SwitchRow("Seite „Uhr + Musik / Aufgaben“", Prefs.pageSplit) { Prefs.pageSplit = it }

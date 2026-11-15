@@ -68,7 +68,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-enum class Page { CLOCK, MUSIC, SPLIT, INFO }
+enum class Page { DASH, CLOCK, MUSIC, SPLIT, INFO }
 
 @Composable
 fun rememberNow(): State<LocalDateTime> = produceState(LocalDateTime.now()) {
@@ -144,6 +144,7 @@ fun StandbyRoot(window: Window) {
     }
 
     val pages = buildList {
+        if (Prefs.pageDash) add(Page.DASH)
         add(Page.CLOCK)
         if (musicActive) add(Page.MUSIC)
         if (Prefs.pageSplit) add(Page.SPLIT)
@@ -192,6 +193,7 @@ fun StandbyRoot(window: Window) {
             modifier = Modifier.fillMaxSize().offset(dx.dp, dy.dp),
         ) { i ->
             when (pages.getOrNull(i)) {
+                Page.DASH -> DashboardPage(now, media, musicActive)
                 Page.CLOCK -> ClockPage(now, media, musicActive) { popupAuto = false; musicPopup = true }
                 Page.MUSIC -> media?.let { MusicPage(it) }
                 Page.SPLIT -> SplitPage(now, media, musicActive)
