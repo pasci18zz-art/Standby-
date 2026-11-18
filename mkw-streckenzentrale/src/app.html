@@ -282,6 +282,57 @@ body{background-color:var(--paper);background-image:repeating-linear-gradient(-4
 .p-close{border:3px solid #fff}
 .cup li button{border:2px solid var(--outline)}
 .stage-bar{border-top:0}
+
+/* ===== Symbole, Online-Bereich, Diagramme ===== */
+.vcard .thumb{width:52px;height:52px;background:none;border-radius:0;overflow:visible}
+.vcard .thumb svg{width:52px;height:52px}
+.main-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hero-card{display:flex;align-items:center;gap:22px;padding:22px;border-radius:24px;border:3px solid var(--outline);box-shadow:0 5px 0 var(--outline);color:#fff;
+  background:repeating-linear-gradient(-45deg,rgba(255,255,255,.09) 0 20px,transparent 20px 40px),var(--hc)}
+.hero-card.t-main{--hc:linear-gradient(120deg,#e3262f,#ff6a2a)}.hero-card.t-int{--hc:linear-gradient(120deg,#7a3fd1,#b05cff)}.hero-card.t-snes{--hc:linear-gradient(120deg,#4a4fb8,#7b7ff0)}
+.hero-card svg{flex:none}
+.hero-tx{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hero-k{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;opacity:.9}
+.hero-tx b{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:clamp(24px,3vw,34px);line-height:1.05}
+.hero-tx span:last-child{font-weight:700;opacity:.92}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.kpi{background:var(--card);border:3px solid var(--outline);box-shadow:0 5px 0 var(--outline);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi .k{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-soft)}
+.kpi .v{font-family:var(--f-display);font-style:italic;font-weight:900;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--ink-soft);font-weight:600}
+.pos{color:var(--good)} .neg{color:var(--kart)}
+.oform{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end}
+.oform label{display:flex;flex-direction:column;gap:5px;font-family:var(--f-display);font-weight:800;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-soft);min-width:0}
+.oform input,.oform select{border:3px solid var(--outline);border-radius:12px;padding:8px 10px;background:var(--paper);font-family:var(--f-body);font-size:15px;font-weight:700;text-transform:none;letter-spacing:0;color:var(--ink);width:100%;min-width:0}
+.oform .wide{grid-column:span 2}
+.oform .delta{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:22px;padding:6px 0;text-transform:none}
+.oform .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:14px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .ax{font-size:11px;fill:var(--ink-soft);font-family:var(--f-body);font-variant-numeric:tabular-nums}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .base{stroke:var(--ink-soft);stroke-width:1.5}
+.chart .hit{fill:transparent;cursor:crosshair}
+.chart .empty{fill:var(--ink-soft);font-size:14px;font-weight:700}
+.chart .sub{margin:-4px 0 8px;font-size:12px;color:var(--ink-soft);font-weight:600}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--paper);padding:7px 10px;border-radius:10px;font-size:12px;font-weight:700;line-height:1.35;box-shadow:var(--shadow);max-width:240px;white-space:pre-line}
+.otable{overflow-x:auto}
+.otable table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.otable th{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);text-align:right;padding:8px;border-bottom:3px solid var(--outline);white-space:nowrap;cursor:pointer}
+.otable th:first-child,.otable td:first-child{text-align:left}
+.otable td{padding:8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.otable tbody tr{cursor:pointer}
+.otable tbody tr:hover{background:var(--hl-soft)}
+.otable td .nm{display:inline-flex;align-items:center;gap:8px;font-weight:700}
+.olist{display:flex;flex-direction:column;gap:6px}
+.orow{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--chip);font-size:14px}
+.orow .place{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:20px;min-width:62px;font-variant-numeric:tabular-nums}
+.orow small{color:var(--ink-soft);font-weight:600}
+.orow .del{border:0;background:none;color:var(--ink-soft);font-weight:800;font-size:12px;text-decoration:underline}
+.orow .del.arm{color:var(--kart)}
+.scope{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.scope select{border:3px solid var(--outline);border-radius:12px;padding:7px 10px;background:var(--card);font-weight:700;max-width:100%}
+@media (max-width:720px){.oform .wide{grid-column:1/-1}.orow{grid-template-columns:auto 1fr auto}.orow .del{grid-column:3}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -294,6 +345,7 @@ body{background-color:var(--paper);background-image:repeating-linear-gradient(-4
     <nav class="nav" aria-label="Hauptnavigation">
       <a href="#karte" data-nav="karte">Weltkarte</a>
       <a href="#alle" data-nav="alle">Alle Strecken</a>
+      <a href="#online" data-nav="online">Online</a>
       <a href="#fortschritt" data-nav="fortschritt">Fortschritt</a>
     </nav>
     <div class="search" role="search">
@@ -325,6 +377,8 @@ body{background-color:var(--paper);background-image:repeating-linear-gradient(-4
     <section class="view" id="v-detail" hidden></section>
     <section class="view" id="v-all" hidden></section>
     <section class="view" id="v-prog" hidden></section>
+    <section class="view" id="v-online" hidden></section>
+    <div class="tip" id="tip" hidden></div>
   </main>
 </div>
 
@@ -434,6 +488,12 @@ let S={};
 try{S=JSON.parse(localStorage.getItem(LS))||{}}catch(e){S={}}
 const get=id=>S[id]||{};
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+/* Online-Ergebnisse: id "o-…" → {m:"race"|"ko", v:Varianten-ID|Rallye, p:Platz, n:Fahrer, a:VR vorher, b:VR nachher, d:Zeit} */
+const OLS="mkw-zentrale-online-v1";let O={};
+try{O=JSON.parse(localStorage.getItem(OLS))||{}}catch(e){O={}}
+function saveO(){try{localStorage.setItem(OLS,JSON.stringify(O))}catch(e){}}
+function putO(id,rec){O[id]={...rec,t:Date.now()};saveO();queue(id)}
+const rows=()=>Object.entries(O).filter(([,r])=>r&&!r.del).map(([id,r])=>({id,...r})).sort((a,b)=>a.d-b.d||a.t-b.t);
 let cloud=null;const qd={},busy={},tmr={};
 function setV(id,patch){
   const cur={...get(id),...patch,t:Date.now()};
@@ -443,7 +503,7 @@ function setV(id,patch){
 function queue(id){if(!cloud)return;qd[id]=1;clearTimeout(tmr[id]);tmr[id]=setTimeout(()=>flush(id),450)}
 async function flush(id){
   if(busy[id]||!qd[id])return;qd[id]=0;busy[id]=1;
-  try{const d={...S[id]};delete d.img;await cloud.doc(id).set(d);setSync("Synchronisiert mit deinem Claude-Konto")}
+  try{const d={...(id.startsWith("o-")?O[id]:S[id])};await cloud.doc(id).set(d);setSync("Synchronisiert mit deinem Claude-Konto")}
   catch(e){setSync("Cloud-Speichern fehlgeschlagen – lokal gespeichert");}
   busy[id]=0;if(qd[id])flush(id);
 }
@@ -458,19 +518,13 @@ async function initCloud(){
     const col=db.collection("data/users/"+uid);
     const snap=await Promise.race([col.get(),new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000))]);
     const remote={};snap.docs.forEach(d=>{remote[d.id]=d.data()||{}});
-    for(const [id,d] of Object.entries(remote)){if(VI[id]&&(!S[id]||(d.t||0)>(S[id].t||0)))S[id]=d}
-    saveLocal();cloud=col;
+    for(const [id,d] of Object.entries(remote)){if(VI[id]&&(!S[id]||(d.t||0)>(S[id].t||0)))S[id]=d;if(id.startsWith("o-")&&(!O[id]||(d.t||0)>(O[id].t||0)))O[id]=d}
+    saveLocal();saveO();cloud=col;
     for(const id of Object.keys(S)){if(VI[id]&&(!remote[id]||(S[id].t||0)>(remote[id].t||0)))queue(id)}
+    for(const id of Object.keys(O)){if(!remote[id]||(O[id].t||0)>(remote[id].t||0))queue(id)}
     setSync("Synchronisiert mit deinem Claude-Konto");route();
   }catch(e){setSync("Auf diesem Gerät gespeichert")}
 }
-
-/* Eigene Streckenbilder: IndexedDB (nur dieses Gerät) */
-const IDB={db:null,
-  open(){return new Promise(res=>{try{const r=indexedDB.open("mkw-zentrale-img",1);r.onupgradeneeded=()=>r.result.createObjectStore("img");r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>res(null)}catch(e){res(null)}})},
-  async get(k){const db=this.db||await this.open();if(!db)return null;return new Promise(res=>{try{const q=db.transaction("img").objectStore("img").get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)}catch(e){res(null)}})},
-  async set(k,v){const db=this.db||await this.open();if(!db)return false;return new Promise(res=>{try{const tx=db.transaction("img","readwrite");v==null?tx.objectStore("img").delete(k):tx.objectStore("img").put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false)}catch(e){res(false)}})}
-};
 
 /* =====================================================================
    HILFSFUNKTIONEN
@@ -619,120 +673,22 @@ function markSel(id){document.querySelectorAll(".mk").forEach(m=>m.classList.tog
 })();
 
 /* =====================================================================
-   STRECKEN-LAYOUTS (schematische Ersatzdarstellungen)
+   TYP-SYMBOLE (statt Streckenbildern)
    ===================================================================== */
-function loopPts(seed,cx,cy,rx,ry,n){const r=rng(seed);const pts=[];
-  for(let i=0;i<n;i++){const a=i/n*Math.PI*2+(r()-.5)*.4;let k=.55+r()*.45;if(r()<.22)k*=.62;pts.push([cx+Math.cos(a)*rx*k,cy+Math.sin(a)*ry*k])}return pts}
-/* Eigene, frei erfundene Schema-Layouts (kein Nachbau der Originalkarten) */
-function scenery(biome,r){
-  let o="";const P=(n,f)=>{for(let i=0;i<n;i++)o+=f(r()*1000,r()*660,r())};
-  if(biome==="forest"||biome==="jungle")P(70,(x,y,k)=>{const s=14+k*16;return `<circle cx="${x|0}" cy="${(y+5)|0}" r="${s|0}" fill="#000" opacity=".15"/><circle cx="${x|0}" cy="${y|0}" r="${s|0}" fill="${biome==="jungle"?"#1f6b33":"#2f8a3a"}"/><circle cx="${(x-s*.3)|0}" cy="${(y-s*.3)|0}" r="${(s*.45)|0}" fill="#fff" opacity=".12"/>`});
-  else if(biome==="snow")P(60,(x,y,k)=>{const s=12+k*14;return `<path d="M${x|0},${(y-s*1.6)|0}l${s|0},${(s*2)|0}h${(-s*2)|0}z" fill="#3f7a5a"/><path d="M${x|0},${(y-s*1.6)|0}l${(s*.5)|0},${(s*.7)|0}h${(-s)|0}z" fill="#fff"/>`});
-  else if(biome==="desert"||biome==="savanna")P(40,(x,y,k)=>k<.5?`<ellipse cx="${x|0}" cy="${y|0}" rx="${(30+k*40)|0}" ry="${(10+k*8)|0}" fill="#000" opacity=".07"/>`:`<path d="M${x|0},${y|0}v-26m0,10h-9v-9m9,4h9v-10" stroke="#3f8a3a" stroke-width="7" stroke-linecap="round" fill="none"/>`);
-  else if(biome==="canyon")P(30,(x,y,k)=>`<ellipse cx="${x|0}" cy="${y|0}" rx="${(26+k*30)|0}" ry="${(14+k*14)|0}" fill="#a8452a" stroke="#7a2f1e" stroke-width="4"/>`);
-  else if(biome==="volcano")P(26,(x,y,k)=>`<ellipse cx="${x|0}" cy="${y|0}" rx="${(22+k*30)|0}" ry="${(10+k*12)|0}" fill="#ff6a1a" stroke="#ffb02e" stroke-width="3" opacity=".85"/>`);
-  else if(biome==="autumn")P(70,(x,y,k)=>`<circle cx="${x|0}" cy="${y|0}" r="${(12+k*14)|0}" fill="${k<.5?"#d4552a":"#f0a52a"}"/>`);
-  else if(biome==="coast")o+=`<path d="M0,500 C200,470 400,560 620,520 S900,470 1000,500 V660 H0Z" fill="#2fb3c9"/><path d="M0,500 C200,470 400,560 620,520 S900,470 1000,500" stroke="#fff" stroke-width="6" fill="none" opacity=".7"/>`+Array.from({length:40},()=>{const x=r()*1000,y=540+r()*110;return `<path d="M${x|0},${y|0}q8,-6 16,0t16,0" stroke="#fff" stroke-opacity=".5" stroke-width="3" fill="none"/>`}).join("");
-  else if(biome==="sky")P(140,(x,y,k)=>`<circle cx="${x|0}" cy="${y|0}" r="${(k*2.4+.4).toFixed(1)}" fill="#fff" opacity="${(.3+k*.7).toFixed(2)}"/>`);
-  else P(80,(x,y,k)=>k<.3?`<circle cx="${x|0}" cy="${y|0}" r="5" fill="${["#fff","#ffd400","#ff7aa8"][(k*10|0)%3]}"/>`:`<circle cx="${x|0}" cy="${y|0}" r="${(10+k*12)|0}" fill="#6fae2d" opacity=".45"/>`);
-  return o;
+function emblem(type,size=56){
+  const bg={main:"#e3262f",int:"#7a3fd1",snes:"#5b5fc7"}[type];
+  const inner=type==="main"
+   ?`<path d="M20 50V13" stroke="#fff" stroke-width="4" stroke-linecap="round"/>${[0,1,2,3,4].map(c=>[0,1,2,3].map(r=>(c+r)%2?"":`<rect x="${22+c*4.6}" y="${14+r*4.6+Math.sin(c*.9)*2}" width="4.6" height="4.6" fill="#fff"/>`).join("")).join("")}<path d="M22 14 Q33 10 45 14 V32.4 Q33 28.4 22 32.4Z" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>`
+   :type==="int"
+   ?`<circle cx="16" cy="44" r="6" fill="#1f9d55" stroke="#fff" stroke-width="3"/><circle cx="48" cy="18" r="6" fill="#ffd400" stroke="#fff" stroke-width="3"/><path d="M21 40 C30 40 26 22 39 21" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 7"/><path d="M36 15l6 6-7 4" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`
+   :`<rect x="10" y="20" width="44" height="24" rx="12" fill="#fff"/><path d="M18 29h4v-4h4v4h4v4h-4v4h-4v-4h-4z" fill="#5b5fc7"/><circle cx="41" cy="29" r="3" fill="#e3262f"/><circle cx="47" cy="33" r="3" fill="#ffd400"/><circle cx="41" cy="37" r="3" fill="#1f9d55"/><text x="32" y="56" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-size="9" fill="#fff">16-BIT</text>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="4" width="60" height="58" rx="16" fill="#16203a"/><rect x="2" y="2" width="60" height="56" rx="16" fill="${bg}" stroke="#16203a" stroke-width="3"/>${inner}</svg>`;
 }
-function mainLayout(v,small){
-  const t=T[v.track];const b=BIOMES[t.biome];const r=rng(v.id+"deko");
-  const pts=loopPts(v.id,500,335,400,255,small?9:12);const d=smooth(pts);
-  const sky=t.biome==="sky";const road=sky?"#262a66":t.biome==="snow"?"#5a6680":"#41464f";
-  const W=small?16:54;
-  const bg=sky?`<rect width="1000" height="660" fill="#0f1236"/><rect width="1000" height="660" fill="url(#vg-${v.id})"/>`:`<rect width="1000" height="660" fill="${b.g}"/>`;
-  return `<svg viewBox="0 0 1000 660" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Schema-Layout ${esc(v.name)}">
-   <defs><linearGradient id="rbw2-${v.id}" x1="0" x2="1"><stop offset="0" stop-color="#ff4d6d"/><stop offset=".3" stop-color="#ffc31f"/><stop offset=".55" stop-color="#3ddc84"/><stop offset=".8" stop-color="#3fa9ff"/><stop offset="1" stop-color="#b65cff"/></linearGradient>
-     <radialGradient id="vg-${v.id}" cx="50%" cy="50%" r="70%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>
-   ${bg}${small?"":scenery(t.biome,r)}
-   ${small?"":`<path d="${d}" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="${W+30}" stroke-linejoin="round" transform="translate(0,10)"/>`}
-   <path d="${d}" fill="none" stroke="#16203a" stroke-width="${W+(small?10:30)}" stroke-linejoin="round"/>
-   <path d="${d}" fill="none" stroke="${sky?`url(#rbw2-${v.id})`:"#fff"}" stroke-width="${W+(small?6:20)}" stroke-linejoin="round"/>
-   ${sky?"":`<path d="${d}" fill="none" stroke="#e3262f" stroke-width="${W+(small?6:20)}" stroke-dasharray="18 18" stroke-linejoin="round"/>`}
-   <path class="trk" d="${d}" fill="none" stroke="${road}" stroke-width="${W}" stroke-linejoin="round"/>
-   ${small?"":`<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-dasharray="22 20"/><g class="dyn"></g><rect width="1000" height="660" fill="url(#vg-${v.id})" pointer-events="none"/>`}
-  </svg>`;
-}
-function snesLayout(v,small){
-  const th={mc:{bg:"#58b84a",tile:"#4aa63e",road:"#8c8c96",edge:"#f2f2f2",ac:"#e3262f"},
-            gv:{bg:"#2b2440",tile:"#352d4f",road:"#a87444",edge:"#6b4424",ac:"#8a7cff"},
-            ci:{bg:"#7a4a2a",tile:"#6b3f22",road:"#c8925a",edge:"#4a2a14",ac:"#ffd27a"},
-            vl:{bg:"#cfe6f7",tile:"#b7d7ef",road:"#e9f4fb",edge:"#6aa6d6",ac:"#2b78c9"},
-            kb:{bg:"#2f9fd6",tile:"#2a8fc2",road:"#f2dc96",edge:"#e0c071",ac:"#ffffff"}}[v.theme];
-  const r=rng(v.id);const G=30;const W=33,H=22;
-  // Rechteck mit zufälligen Einbuchtungen (rasterförmig wie im Original-Stil der 16-Bit-Ära)
-  let x0=3,y0=3,x1=W-4,y1=H-4;const pts=[[x0,y0]];
-  const notch=(a,b,fixed,dir,horiz)=>{const out=[];let p=a;const step=b>a?1:-1;
-    while((b-p)*step>6){const len=3+Math.floor(r()*4);const at=p+step*(2+Math.floor(r()*3));const end=at+step*len;if((b-end)*step<3)break;
-      if(r()<.6){const dep=2+Math.floor(r()*4);out.push(horiz?[at,fixed]:[fixed,at],horiz?[at,fixed+dir*dep]:[fixed+dir*dep,at],horiz?[end,fixed+dir*dep]:[fixed+dir*dep,end],horiz?[end,fixed]:[fixed,end])}p=end}
-    return out};
-  pts.push(...notch(x0,x1,y0,1,true),[x1,y0],...notch(y0,y1,x1,-1,false),[x1,y1],...notch(x1,x0,y1,-1,true),[x0,y1],...notch(y1,y0,x0,1,false));
-  const d="M"+pts.map(p=>`${p[0]*G},${p[1]*G}`).join("L")+"Z";
-  const sw=small?30:46;
-  return `<svg viewBox="0 0 1000 660" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges" role="img" aria-label="Schematisches Layout ${esc(v.name)}">
-   <defs><pattern id="tl-${v.id}" width="60" height="60" patternUnits="userSpaceOnUse"><rect width="60" height="60" fill="${th.bg}"/><rect width="30" height="30" fill="${th.tile}"/><rect x="30" y="30" width="30" height="30" fill="${th.tile}"/></pattern></defs>
-   <rect width="1000" height="660" fill="url(#tl-${v.id})"/>
-   <path d="${d}" fill="none" stroke="${th.edge}" stroke-width="${sw+16}" stroke-linejoin="miter"/>
-   <path class="trk" d="${d}" fill="none" stroke="${th.road}" stroke-width="${sw}" stroke-linejoin="miter"/>
-   ${small?"":`<path d="${d}" fill="none" stroke="${th.ac}" stroke-opacity=".5" stroke-width="4" stroke-dasharray="12 24"/><g class="dyn"></g>`}
-  </svg>`;
-}
-function routeLayout(v,small){
-  const a=T[v.from],b=T[v.to];const r=rng(v.id);
-  const pad=small?60:110;let x0=Math.min(a.x,b.x)-pad,x1=Math.max(a.x,b.x)+pad,y0=Math.min(a.y,b.y)-pad,y1=Math.max(a.y,b.y)+pad;
-  // auf Bühnen-Seitenverhältnis bringen
-  const ar=1000/660;let w=x1-x0,h=y1-y0;if(w/h<ar){const nw=h*ar;x0-=(nw-w)/2;w=nw}else{const nh=w/ar;y0-=(nh-h)/2;h=nh}
-  const n=4;const pts=[[a.x,a.y]];const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
-  for(let i=1;i<n;i++){const f=i/n;const off=(r()-.5)*Math.min(90,L*.35);pts.push([a.x+dx*f-dy/L*off,a.y+dy*f+dx/L*off])}
-  pts.push([b.x,b.y]);const d=smooth(pts,false);
-  const sc=w/1000;
-  const pin=(t,lab,col,up)=>`<g transform="translate(${t.x},${t.y}) scale(${sc*1.6})"><circle r="24" fill="${col}" stroke="#fff" stroke-width="5"/><text y="6" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-style="italic" font-size="15" fill="#fff">${esc(t.abbr)}</text>${small?"":`<text y="${up?-36:48}" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-style="italic" font-size="17" fill="#fff" stroke="#16203a" stroke-width="5" paint-order="stroke">${esc(lab)}</text>`}</g>`;
-  return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Route ${esc(v.name)} auf der Weltkarte">
-   ${worldArt()}
-   <path d="${d}" fill="none" stroke="#16203a" stroke-opacity=".35" stroke-width="${(small?22:16)*sc*1.5}" stroke-linecap="round" transform="translate(0,${3*sc})"/>
-   <path d="${d}" fill="none" stroke="#fff" stroke-width="${(small?20:15)*sc*1.5}" stroke-linecap="round"/>
-   <path class="trk" d="${d}" fill="none" stroke="#7a3fd1" stroke-width="${(small?12:9)*sc*1.5}" stroke-linecap="round" data-sc="${sc}"/>
-   ${small?"":`<g class="dyn"></g>`}
-   ${pin(a,"Start: "+a.name,"#1f9d55",a.y<b.y)}${pin(b,"Ziel: "+b.name,"#e3262f",b.y<=a.y)}
-  </svg>`;
-}
-function layoutFor(v,small){return v.type==="main"?mainLayout(v,small):v.type==="snes"?snesLayout(v,small):routeLayout(v,small)}
-function decorate(svgEl,v){ // Richtungspfeile, Start/Ziel, Abschnittsmarken
-  const p=svgEl.querySelector(".trk"),g=svgEl.querySelector(".dyn");if(!p||!g)return;
-  const L=p.getTotalLength();let out="";
-  const at=f=>{const q=p.getPointAtLength(L*f),q2=p.getPointAtLength(Math.min(L,L*f+2));return{x:q.x,y:q.y,a:Math.atan2(q2.y-q.y,q2.x-q.x)*180/Math.PI}};
-  if(v.type==="int"){const sc=+p.dataset.sc||1;
-    for(let i=1;i<v.sections;i++){const q=at(i/v.sections);
-      out+=`<g transform="translate(${q.x},${q.y}) scale(${sc*1.5})"><circle r="15" fill="#ffc31f" stroke="#16203a" stroke-width="3"/><text y="5.5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-size="15" fill="#16203a">${i}</text></g>`}
-    for(let i=0;i<v.sections;i++){const q=at((i+.5)/v.sections);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a}) scale(${sc*1.5})"><path d="M-6,-8 L6,0 L-6,8" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>`}
-  }else{
-    const s=at(0);out+=`<g transform="translate(${s.x},${s.y}) rotate(${s.a+90})"><g>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${-28+i*7}" y="-7" width="7" height="7" fill="${i%2?"#fff":"#16203a"}"/><rect x="${-28+i*7}" y="0" width="7" height="7" fill="${i%2?"#16203a":"#fff"}"/>`).join("")}</g></g>`;
-    for(let i=1;i<9;i++){const q=at(i/9);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a})"><path d="M-8,-10 L6,0 L-8,10" fill="none" stroke="#ffc31f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>`}
-    if(v.type==="main"){
-      const norm=f=>{const q=at(f);const a=q.a*Math.PI/180;return{x:q.x,y:q.y,nx:-Math.sin(a),ny:Math.cos(a),a:q.a}};
-      [.2,.52,.8].forEach(f=>{const q=norm(f);for(let k=-1.5;k<=1.5;k++){const x=q.x+q.nx*k*13,y=q.y+q.ny*k*13;
-        out+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${q.a+45})"><rect x="-6" y="-6" width="12" height="12" rx="2" fill="url(#ibx)" stroke="#fff" stroke-width="1.5"/></g>`}});
-      [.33,.68].forEach(f=>{const q=at(f);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a})"><rect x="-22" y="-16" width="44" height="32" rx="5" fill="#ff8a00" stroke="#16203a" stroke-width="3"/><path d="M-12,-9 L-2,0 L-12,9 M2,-9 L12,0 L2,9" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`});
-      const N=240,P=[];for(let i=0;i<N;i++)P.push(at(i/N));const turn=i=>{let d=P[(i+6)%N].a-P[(i-6+N)%N].a;while(d>180)d-=360;while(d<-180)d+=360;return d};
-      const cand=[];for(let i=0;i<N;i++){const k=Math.abs(turn(i));if(k>38&&k>=Math.abs(turn((i+1)%N))&&k>=Math.abs(turn((i-1+N)%N)))cand.push({i,k,s:Math.sign(turn(i))})}
-      const pick=[];cand.sort((a,b)=>b.k-a.k).forEach(c=>{if(pick.length<7&&pick.every(p=>Math.min(Math.abs(p.i-c.i),N-Math.abs(p.i-c.i))>14))pick.push(c)});
-      pick.sort((a,b)=>a.i-b.i).forEach((c,j)=>{const q=P[c.i];const a=q.a*Math.PI/180;const off=-c.s*58;const x=q.x-Math.sin(a)*off,y=q.y+Math.cos(a)*off;
-        out+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><rect x="-19" y="-14" width="38" height="28" rx="8" fill="#fff" stroke="#16203a" stroke-width="3"/><text y="6" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-style="italic" font-size="15" fill="#16203a">K${j+1}</text></g>`});
-      g.insertAdjacentHTML("beforebegin",`<defs><linearGradient id="ibx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd400"/><stop offset=".5" stop-color="#ff7aa8"/><stop offset="1" stop-color="#3fa9ff"/></linearGradient></defs>`);
-    }
-    const lp=v.type==="main"&&LAPS[v.track];if(lp){for(let i=1;i<lp[1];i++){const m=at(i/lp[1]);out+=`<g transform="translate(${m.x},${m.y})"><circle r="17" fill="#ffd400" stroke="#16203a" stroke-width="4"/><text y="6" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-size="17" fill="#16203a">${i}</text></g>`}}
-    const q=at(0.04);out+=`<g transform="translate(${q.x},${q.y-46})"><rect x="-44" y="-15" width="88" height="28" rx="14" fill="#16203a"/><text y="5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-size="14" fill="#fff">START</text></g>`;
-  }
-  g.innerHTML=out;
-}
-
 /* =====================================================================
    PANEL: Streckenauswahl
    ===================================================================== */
 let panelTab="out";
-function vcard(v,sub){return `<button class="vcard" data-go="${v.id}"><span class="thumb">${layoutFor(v,true)}</span><span class="tx">${typePill(v.type)}<b>${esc(v.type==="int"?"→ "+T[v.to].name:v.name)}</b><small>${esc(sub)}</small></span><span class="st">${statusHTML(v.id)}</span></button>`}
+function vcard(v,sub){return `<button class="vcard" data-go="${v.id}"><span class="thumb">${emblem(v.type,52)}</span><span class="tx">${typePill(v.type)}<b>${esc(v.type==="int"?"→ "+T[v.to].name:v.name)}</b><small>${esc(sub)}</small></span><span class="st">${statusHTML(v.id)}</span></button>`}
 function rrow(v,dir){const other=dir==="out"?T[v.to]:T[v.from];
   return `<button class="rrow" data-go="${v.id}"><span class="arrow">${ico("arrow",20)}</span><span class="nm">${dir==="out"?"nach ":"von "}${esc(other.name)}<small>${v.sections} Abschnitte${v.oneway?" · nur in diese Richtung":""}</small></span>${statusHTML(v.id)}</button>`}
 function renderPanel(id){
@@ -742,10 +698,10 @@ function renderPanel(id){
      <button class="p-close" aria-label="Schließen" data-close>×</button>
      <span class="chip" style="background:rgba(0,0,0,.2);color:#fff">${esc(b.n)}</span>
      <h2>${esc(t.name)}</h2>
-     <div class="meta">${t.cups.map(c=>`<span class="chip">${esc(c.name)}</span>`).join("")}<span class="chip">${outs.length} Abfahrten · ${ins.length} Ankünfte</span></div>
+     <div class="meta"><span class="chip">${esc(lapText(id))}</span><span class="chip">${outs.length} Abfahrten · ${ins.length} Ankünfte</span></div>
    </div>
    <div class="p-body">
-     <div><p class="sec-t">Hauptstrecke</p>${vcard(VI["main-"+id],lapText(id)+" · "+t.cups.map(c=>c.name).join(", "))}</div>
+     <div><p class="sec-t">Hauptstrecke</p>${vcard(VI["main-"+id],lapText(id)+" · "+BIOMES[t.biome].n)}</div>
      ${sn.length?`<div><p class="sec-t">SNES-Strecken</p><div class="vlist">${sn.map(s=>vcard(s,SNES_LAPS+" · Klassiker aus Update 1.8.0")).join("")}</div></div>`:""}
      <div><p class="sec-t">Intermissions</p>
        <div class="tabs" role="tablist">
@@ -765,7 +721,7 @@ $("#panel").addEventListener("click",e=>{
 /* =====================================================================
    DETAILSEITE
    ===================================================================== */
-let curV=null,noteTimer=null,imgURL=null,showOwn=true;
+let curV=null,noteTimer=null;
 function siblings(v){return V.filter(x=>x.type===v.type).sort((a,b)=>a.order-b.order)}
 async function renderDetail(id){
   const v=VI[id];if(!v){location.hash="karte";return}
@@ -778,10 +734,10 @@ async function renderDetail(id){
   if(v.type==="int"){const rev=VI["r-"+v.to+"--"+v.from];
     sw+=`<button class="sw" data-go="main-${v.to}">Ziel: ${esc(T[v.to].name)}</button>`+(rev?`<button class="sw" data-go="${rev.id}">⇄ Gegenrichtung</button>`:"")}
   const sib=siblings(v);const idx=sib.findIndex(x=>x.id===v.id);
-  const sub=v.type==="main"?`${lapText(t.id)} · ${BIOMES[t.biome].n} · ${t.cups.map(c=>c.name).join(" · ")}`
+  const sub=v.type==="main"?`${lapText(t.id)} · ${BIOMES[t.biome].n}`
     :v.type==="snes"?`${SNES_LAPS} · Super-Mario-Kart-Klassiker · auswählbar über ${t.name}`
     :`Verbindungsstrecke · ${v.sections} Abschnitte · dann 1 Runde auf ${T[v.to].name}${v.oneway?" · nur in diese Richtung befahrbar":""}`;
-  const facts=v.type==="main"?[["Runden",LAPS[t.id]?`1 lange Runde, ${LAPS[t.id][1]} Abschnitte`:"3 Runden"],["Region",BIOMES[t.biome].n],["Cups",t.cups.map(c=>c.name).join(", ")],["Abfahrten",outOf(t.id).length+" Intermissions"],["Ankünfte",inTo(t.id).length+" Intermissions"],["SNES",sn.length?sn.map(s=>s.name.replace("SNES ","")).join(", "):"–"]]
+  const facts=v.type==="main"?[["Runden",LAPS[t.id]?`1 lange Runde, ${LAPS[t.id][1]} Abschnitte`:"3 Runden"],["Region",BIOMES[t.biome].n],["Abfahrten",outOf(t.id).length+" Intermissions"],["Ankünfte",inTo(t.id).length+" Intermissions"],["SNES",sn.length?sn.map(s=>s.name.replace("SNES ","")).join(", "):"–"]]
     :v.type==="snes"?[["Runden","5 (wie im SNES-Original; nicht offiziell bestätigt)"],["Herkunft","Super Mario Kart (SNES)"],["Gastgeber",t.name],["Hinzugefügt","Update 1.8.0"],["Items","Item-Felder statt Item-Boxen"]]
     :[["Ablauf",`Fahrt über die Route, dann 1 Runde auf ${T[v.to].name}`],["Start",T[v.from].name],["Ziel",T[v.to].name],["Abschnitte",String(v.sections)],["Richtung",v.oneway?"Einbahn (keine Gegenroute)":"Gegenroute vorhanden"],...(v.gimmicks.length?[["Besonderheiten",v.gimmicks.join(", ")]]:[])];
   $("#v-detail").innerHTML=`<div class="detail">
@@ -792,16 +748,14 @@ async function renderDetail(id){
     </div>
     <div class="switch" aria-label="Variante wechseln">${sw}</div>
     <div class="d-grid">
-      <div class="stage">
-        <div class="canvas" id="canvas">${layoutFor(v,false)}</div>
-        <div class="stage-bar">
-          <span class="cap" id="cap">${v.type==="int"?"Route auf der Weltkarte mit Abschnittsmarken (schematisch).":"Schema – nicht das Originallayout."} Echte Streckenkarte: Screenshot hochladen, hier hineinziehen oder mit Strg+V einfügen.</span>
-          <a class="btn" href="${v.type==="int"?"https://www.mariowiki.com/Route":"https://www.mariowiki.com/index.php?search="+encodeURIComponent(v.name+" Mario Kart World")}" target="_blank" rel="noopener">Karte im Wiki ↗</a>
-          <button class="btn" id="tglImg" hidden>Schema zeigen</button>
-          <label class="btn primary" for="upl">Streckenkarte hochladen</label><input id="upl" type="file" accept="image/*" hidden>
-          <button class="btn" id="delImg" hidden>Bild entfernen</button>
+      <div class="main-col">
+        <div class="hero-card t-${v.type}">
+          ${emblem(v.type,120)}
+          <div class="hero-tx"><span class="hero-k">${TYPE_N[v.type]}</span><b>${esc(v.type==="main"?lapText(t.id):v.type==="snes"?SNES_LAPS:v.sections+" Abschnitte + 1 Runde")}</b>
+          <span>${esc(v.type==="main"?BIOMES[t.biome].n:v.type==="snes"?"Gastgeber: "+t.name:"von "+T[v.from].name+" nach "+T[v.to].name)}</span></div>
         </div>
-        <div class="src-row" id="srcRow" hidden><label for="srcIn">Bildquelle</label><input id="srcIn" type="text" placeholder="z. B. Super Mario Wiki – https://…" value="${esc(d.src||"")}"><span id="srcOut"></span></div>
+        ${onlineBox(v.id)}
+        <div class="box"><h3>Steckbrief</h3><dl class="facts">${facts.map(f=>`<dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd>`).join("")}</dl><p class="sync" style="margin:10px 0 0">${esc(syncText)}</p></div>
       </div>
       <div class="side">
         <div class="box">
@@ -818,25 +772,13 @@ async function renderDetail(id){
           <div class="tpl">${["Abkürzung","Guter Fahrweg","Schwierige Kurve","Überholstelle","Strategie"].map(x=>`<button data-tpl="${x}">+ ${x}</button>`).join("")}</div>
           <textarea id="note-${v.id}" placeholder="z. B. Abkürzung nach der zweiten Kurve mit Pilz, Überholen auf der langen Geraden …">${esc(d.n||"")}</textarea>
         </div>
-        <div class="box"><h3>Steckbrief</h3><dl class="facts">${facts.map(f=>`<dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd>`).join("")}</dl><p class="sync" style="margin:10px 0 0">${esc(syncText)}</p></div>
       </div>
     </div>
   </div>`;
   paintRates(d.r);
-  const svg=$("#canvas svg");if(svg)decorate(svg,v);
-  showOwn=true;await loadImg(v.id);
   $("#v-detail").scrollTop=0;
 }
 function paintRates(r){document.querySelectorAll(".rates button").forEach(b=>{const n=+b.dataset.r;const on=r&&n<=r;b.classList.toggle("fill",!!on);b.style.background=on?rateColor(r):"";b.setAttribute("aria-checked",String(n===r))})}
-async function loadImg(id){
-  const blob=await IDB.get("img-"+id);if(curV?.id!==id)return;
-  if(imgURL){URL.revokeObjectURL(imgURL);imgURL=null}
-  const has=!!blob;$("#delImg").hidden=!has;$("#tglImg").hidden=!has;
-  $("#srcRow").hidden=!has;
-  if(has){imgURL=URL.createObjectURL(blob);if(showOwn){$("#canvas").innerHTML=`<img src="${imgURL}" alt="Eigenes Streckenbild ${esc(curV.name)}">`;$("#cap").textContent="Dein eigenes Bild (nur auf diesem Gerät gespeichert).";$("#tglImg").textContent="Schema zeigen"}}
-  paintSrc();
-}
-function shrink(file){return new Promise(res=>{const im=new Image();im.onload=()=>{const m=1800,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k|0;c.height=im.height*k|0;c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>res(b||file),"image/jpeg",.88);URL.revokeObjectURL(im.src)};im.onerror=()=>res(file);im.src=URL.createObjectURL(file)})}
 $("#v-detail").addEventListener("click",async e=>{
   if(!curV)return;const id=curV.id;
   const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
@@ -846,28 +788,14 @@ $("#v-detail").addEventListener("click",async e=>{
   if(e.target.closest("#rclr")){setV(id,{r:null});$("#rbig").textContent="–";$("#rbig").classList.add("none");$("#rword").textContent="Noch nicht bewertet";$("#rclr").hidden=true;paintRates(0);return}
   if(e.target.closest("#win")){const w=!get(id).w;setV(id,{w,wd:w?Date.now():null});const b=$("#win");b.setAttribute("aria-checked",String(w));$("#wtxt").textContent=w?"Gewonnen!":"Noch nicht gewonnen";$("#wsub").textContent=w?"seit "+new Date().toLocaleDateString("de-DE"):"Antippen zum Umschalten";return}
   const tp=e.target.closest("[data-tpl]");if(tp){const ta=$(`#note-${CSS.escape(id)}`);const pre=ta.value&&!ta.value.endsWith("\n")?"\n":"";ta.value+=pre+"• "+tp.dataset.tpl+": ";ta.focus();ta.selectionStart=ta.selectionEnd=ta.value.length;saveNote(ta.value);return}
-  if(e.target.closest("#delImg")){await IDB.set("img-"+id,null);$("#canvas").innerHTML=layoutFor(curV,false);decorate($("#canvas svg"),curV);$("#delImg").hidden=true;$("#tglImg").hidden=true;return}
-  if(e.target.closest("#tglImg")){showOwn=!showOwn;if(showOwn)loadImg(id);else{$("#canvas").innerHTML=layoutFor(curV,false);decorate($("#canvas svg"),curV);$("#tglImg").textContent="Eigenes Bild zeigen"}}
+  if(e.target.closest("[data-ostat]")){OST.mode="race";OST.scope=id;location.hash="online";return}
 });
 $("#v-detail").addEventListener("change",async e=>{
   if(e.target.id==="intSel"&&e.target.value){location.hash="v-"+e.target.value;return}
-  if(e.target.id==="upl"&&e.target.files[0])putImg(e.target.files[0]);
 });
-async function putImg(file){if(!curV||!file||!/^image\//.test(file.type))return;const b=await shrink(file);const ok=await IDB.set("img-"+curV.id,b);
-  if(!ok){$("#cap").textContent="Bild konnte in diesem Browser nicht gespeichert werden.";return}showOwn=true;loadImg(curV.id)}
-document.addEventListener("paste",e=>{if($("#v-detail").hidden||!curV)return;if(e.target.tagName==="TEXTAREA"&&!(e.clipboardData&&[...e.clipboardData.items].some(i=>i.type.startsWith("image/"))))return;
-  const it=e.clipboardData&&[...e.clipboardData.items].find(i=>i.type.startsWith("image/"));if(it){e.preventDefault();putImg(it.getAsFile())}});
-$("#v-detail").addEventListener("dragover",e=>{if(e.target.closest(".stage")){e.preventDefault();e.target.closest(".stage").classList.add("drop")}});
-$("#v-detail").addEventListener("dragleave",e=>{const st=e.target.closest(".stage");if(st)st.classList.remove("drop")});
-$("#v-detail").addEventListener("drop",e=>{const st=e.target.closest(".stage");if(!st)return;e.preventDefault();st.classList.remove("drop");putImg(e.dataTransfer.files[0])});
 function saveNote(val){if(!curV)return;const id=curV.id;$("#saved").textContent="Speichert …";clearTimeout(noteTimer);
   noteTimer=setTimeout(()=>{setV(id,{n:val});const s=$("#saved");if(s&&curV?.id===id)s.textContent="✓ Gespeichert"},500)}
-$("#v-detail").addEventListener("input",e=>{if(e.target.tagName==="TEXTAREA")saveNote(e.target.value);
-  if(e.target.id==="srcIn"&&curV){clearTimeout(srcT);const id=curV.id,val=e.target.value;srcT=setTimeout(()=>{setV(id,{src:val});paintSrc()},500)}});
-let srcT=null;
-function paintSrc(){const o=$("#srcOut");if(!o||!curV)return;const v=(get(curV.id).src||"").trim();const m=v.match(/https?:\/\/\S+/);
-  o.innerHTML=v?`Quelle: ${m?esc(v.replace(m[0],"").replace(/[–-]\s*$/,"").trim())+` <a href="${esc(m[0])}" target="_blank" rel="noopener">${esc(m[0].replace(/^https?:\/\//,"").slice(0,40))}</a>`:esc(v)}`:"Noch keine Quelle angegeben."}
-
+$("#v-detail").addEventListener("input",e=>{if(e.target.tagName==="TEXTAREA")saveNote(e.target.value)});
 /* =====================================================================
    ALLE STRECKEN
    ===================================================================== */
@@ -880,7 +808,7 @@ function renderAll(){
     <div class="filters">
       <div class="seg" data-f="type">${[["all","Alle"],["main","Haupt"],["int","Intermissions"],["snes","SNES"]].map(([k,l])=>`<button data-v="${k}" aria-pressed="${F.type===k}">${l}</button>`).join("")}</div>
       <div class="seg" data-f="st">${[["all","Alle"],["won","Gewonnen"],["open","Offen"],["rated","Bewertet"],["notes","Mit Notizen"]].map(([k,l])=>`<button data-v="${k}" aria-pressed="${F.st===k}">${l}</button>`).join("")}</div>
-      <select id="fsort" aria-label="Sortierung"><option value="cup">Cup-Reihenfolge</option><option value="name">Name A–Z</option><option value="rate">Beste Bewertung</option></select>
+      <select id="fsort" aria-label="Sortierung"><option value="cup">Standard</option><option value="name">Name A–Z</option><option value="rate">Beste Bewertung</option></select>
       <input id="fq" type="search" placeholder="In der Liste suchen …" value="${esc(F.q)}" aria-label="Liste filtern">
     </div>
     <p class="count" id="fcount"></p>
@@ -895,8 +823,8 @@ function fillAll(){
   else if(F.sort==="rate")list.sort((a,b)=>(get(b.id).r||0)-(get(a.id).r||0)||a.order-b.order);
   else list.sort((a,b)=>a.order-b.order);
   $("#fcount").textContent=`${list.length} Einträge`;
-  $("#fgrid").innerHTML=list.map(v=>{const t=T[v.track];const sub=v.type==="main"?lapText(t.id)+" · "+t.cups.map(c=>c.name).join(" · "):v.type==="snes"?SNES_LAPS+" · über "+t.name:`${v.sections} Abschnitte${v.oneway?" · Einbahn":""}`;
-    return `<button class="vcard" data-go="${v.id}"><span class="thumb">${v.type==="int"?`<svg viewBox="0 0 64 48"><rect width="64" height="48" fill="#7a3fd1"/><path d="M10 34 Q32 6 54 30" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="10" cy="34" r="5" fill="#1f9d55" stroke="#fff" stroke-width="2"/><circle cx="54" cy="30" r="5" fill="#e3262f" stroke="#fff" stroke-width="2"/></svg>`:layoutFor(v,true)}</span><span class="tx">${typePill(v.type)}<b>${esc(v.name)}</b><small>${esc(sub)}</small></span><span class="st">${statusHTML(v.id)}</span></button>`}).join("")||`<p class="note-empty">Keine Strecke passt zu diesen Filtern.</p>`;
+  $("#fgrid").innerHTML=list.map(v=>{const t=T[v.track];const sub=v.type==="main"?lapText(t.id)+" · "+BIOMES[t.biome].n:v.type==="snes"?SNES_LAPS+" · über "+t.name:`${v.sections} Abschnitte${v.oneway?" · Einbahn":""}`;
+    return `<button class="vcard" data-go="${v.id}"><span class="thumb">${emblem(v.type,52)}</span><span class="tx">${typePill(v.type)}<b>${esc(v.name)}</b><small>${esc(sub)}</small></span><span class="st">${statusHTML(v.id)}</span></button>`}).join("")||`<p class="note-empty">Keine Strecke passt zu diesen Filtern.</p>`;
 }
 $("#v-all").addEventListener("click",e=>{const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
   const b=e.target.closest(".seg button");if(b){F[b.parentElement.dataset.f]=b.dataset.v;b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));fillAll()}});
@@ -923,8 +851,6 @@ function renderProg(){
       <div class="stat"><span class="k">Intermissions</span><span class="v">${won(by("int"))}<small> / 202</small></span>${bar(by("int"),"var(--int)")}</div>
       <div class="stat"><span class="k">SNES-Strecken</span><span class="v">${won(by("snes"))}<small> / 10</small></span>${bar(by("snes"),"var(--snes)")}</div>
     </div>
-    <div><p class="sec-t">Cups – Siege auf den Hauptstrecken</p>
-    <div class="cupgrid">${CUPS.map(c=>{const w=c.t.filter(id=>get("main-"+id).w).length;return `<div class="cup"><h3><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="${c.c}"/>${w===4?`<path d="M7 12.5l3.2 3.2L17.5 8.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`:""}</svg>${esc(c.name)}<small>${w}/4</small></h3><ol>${c.t.map(id=>`<li><button data-go="main-${id}"><span class="n">${esc(T[id].name)}</span>${statusHTML("main-"+id)}</button></li>`).join("")}</ol></div>`}).join("")}</div></div>
     <div class="two">
       <div class="box"><h3>Bewertungen <span class="count">Ø ${avg?avg.toFixed(1).replace(".",","):"–"}</span></h3>
         <div class="hist">${hist.map((n,i)=>`<div><span>${n}</span><i style="height:${(n/hm*100).toFixed(0)}%;background:${rateColor(i+1)}"></i><b>${i+1}</b></div>`).join("")}</div></div>
@@ -942,15 +868,158 @@ function renderProg(){
   </div>`;
 }
 $("#v-prog").addEventListener("click",async e=>{const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
-  if(e.target.closest("#exp")){const json=JSON.stringify({app:"mkw-streckenzentrale",version:1,exported:new Date().toISOString(),data:S},null,1);
+  if(e.target.closest("#exp")){const json=JSON.stringify({app:"mkw-streckenzentrale",version:1,exported:new Date().toISOString(),data:S,online:O},null,1);
     const fn="mkw-streckenzentrale-"+new Date().toISOString().slice(0,10)+".json";
     let done=false;try{const dl=window.claude?.use?await claude.use("downloads"):null;if(dl){await dl.save({filename:fn,data:json});done=true;$("#bmsg").textContent="Sicherung gespeichert."}}catch(err){}
     if(!done){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([json],{type:"application/json"}));a.download=fn;a.click();}catch(err){}
       const ta=$("#expTxt");ta.hidden=false;ta.value=json;ta.select();try{await navigator.clipboard.writeText(json);$("#bmsg").textContent="Sicherung in die Zwischenablage kopiert (und unten angezeigt)."}catch(err){$("#bmsg").textContent="Sicherung unten markiert – kopieren und als .json speichern."}}}
 });
 $("#v-prog").addEventListener("change",e=>{if(e.target.id!=="impf"||!e.target.files[0])return;const f=new FileReader();
-  f.onload=()=>{try{const j=JSON.parse(f.result);const d=j.data||j;let n=0;for(const[k,v]of Object.entries(d)){if(VI[k]&&v&&typeof v==="object"){S[k]={...v,t:Date.now()};queue(k);n++}}saveLocal();refreshBadges();renderProg();$("#bmsg").textContent=n+" Einträge importiert."}catch(err){$("#bmsg").textContent="Diese Datei ist keine gültige Sicherung."}};
+  f.onload=()=>{try{const j=JSON.parse(f.result);const d=j.data||j;let n=0;if(j.online)for(const[k,v]of Object.entries(j.online)){if(k.startsWith("o-")&&v){O[k]={...v,t:Date.now()};queue(k);n++}}saveO();for(const[k,v]of Object.entries(d)){if(VI[k]&&v&&typeof v==="object"){S[k]={...v,t:Date.now()};queue(k);n++}}saveLocal();refreshBadges();renderProg();$("#bmsg").textContent=n+" Einträge importiert."}catch(err){$("#bmsg").textContent="Diese Datei ist keine gültige Sicherung."}};
   f.readAsText(e.target.files[0])});
+
+
+/* =====================================================================
+   ONLINE: Ergebnisse eintragen & auswerten (Rennen und Knockout-Tour)
+   ===================================================================== */
+const RALLIES=["Golden Rally","Ice Rally","Moon Rally","Heart Rally","Drill Rally","Boomerang Rally","Propeller Rally","Turnip Rally"];
+const OST={mode:"race",scope:"all",sort:"n",armed:null,draft:{}};
+const MODE_N={race:"Rennen",ko:"Knockout-Tour"};
+const scopeName=(m,k)=>m==="race"?(VI[k]?VI[k].name:k):k;
+const fmtN=(x,d=1)=>Number.isFinite(x)?x.toFixed(d).replace(".",","):"–";
+const sgn=x=>(x>0?"+":x<0?"−":"±")+Math.abs(x);
+const dstr=t=>new Date(t).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
+function lastVR(m){const r=rows().filter(x=>x.m===m&&Number.isFinite(x.b));return r.length?r[r.length-1].b:3000}
+function statsOf(list){const n=list.length;const pl=list.map(r=>r.p);const dv=list.filter(r=>Number.isFinite(r.a)&&Number.isFinite(r.b)).map(r=>r.b-r.a);
+  return{n,avg:n?pl.reduce((a,b)=>a+b,0)/n:NaN,best:n?Math.min(...pl):NaN,wins:pl.filter(x=>x===1).length,top3:n?pl.filter(x=>x<=3).length/n*100:NaN,
+    avgN:n?list.reduce((a,r)=>a+(r.n||0),0)/n:NaN,dvSum:dv.reduce((a,b)=>a+b,0),dvAvg:dv.length?dv.reduce((a,b)=>a+b,0)/dv.length:NaN,
+    rel:n?list.reduce((a,r)=>a+(r.n>1?(r.p-1)/(r.n-1):0),0)/n:NaN}}
+function onlineBox(vid){const l=rows().filter(r=>r.m==="race"&&r.v===vid);const st=statsOf(l);
+  return `<div class="box"><h3>Online auf dieser Strecke</h3>${st.n?`<div class="kpis"><div class="kpi"><span class="k">Rennen</span><span class="v">${st.n}</span></div><div class="kpi"><span class="k">Ø Platz</span><span class="v">${fmtN(st.avg)}</span></div><div class="kpi"><span class="k">VR-Bilanz</span><span class="v ${st.dvSum>0?"pos":st.dvSum<0?"neg":""}">${sgn(st.dvSum)}</span></div></div><p style="margin:12px 0 0"><button class="btn primary" data-ostat>Statistik öffnen</button></p>`:`<p class="note-empty">Noch keine Online-Rennen hier eingetragen. Trag sie im Bereich „Online“ ein.</p><button class="btn" data-ostat>Zum Online-Bereich</button>`}</div>`}
+
+/* --- kleine SVG-Diagramme (eine Achse, dünne Linien, Hover-Tooltips) --- */
+const CW=640,CH=250,ML=44,MR=14,MT=14,MB=30;
+function niceTicks(lo,hi,n=4,int=false){if(lo===hi){lo-=1;hi+=1}const span=hi-lo,step0=span/n,mag=10**Math.floor(Math.log10(step0));let step=[1,2,2.5,5,10].map(k=>k*mag).find(k=>span/k<=n)||10*mag;if(int)step=Math.max(1,Math.round(step));
+  const t=[];for(let v=Math.ceil(lo/step)*step;v<=hi+1e-9;v+=step)t.push(+v.toFixed(6));return{t,lo:Math.min(lo,t[0]),hi:Math.max(hi,t[t.length-1])}}
+function frame(yt,ymap,n,xlab){const W=CW-ML-MR;let g=yt.map(v=>`<line class="grid" x1="${ML}" x2="${CW-MR}" y1="${ymap(v)}" y2="${ymap(v)}"/><text class="ax" x="${ML-8}" y="${ymap(v)+4}" text-anchor="end">${String(v).replace(".",",")}</text>`).join("");
+  const xs=n<=1?[1]:[...new Set([1,Math.round(n/3),Math.round(2*n/3),n].filter(x=>x>=1))];
+  g+=xs.map(i=>`<text class="ax" x="${ML+(n<=1?W/2:(i-1)/(n-1)*W)}" y="${CH-8}" text-anchor="middle">${i}</text>`).join("");
+  return g}
+const xAt=(i,n)=>ML+(n<=1?(CW-ML-MR)/2:i/(n-1)*(CW-ML-MR));
+function emptyChart(msg){return `<svg viewBox="0 0 ${CW} 120"><text class="empty" x="${CW/2}" y="64" text-anchor="middle">${msg}</text></svg>`}
+function lineChart(vals,tips,{invert=false,fixed=null,color="#2b78c9",avg=null}={}){
+  const n=vals.length;if(!n)return emptyChart("Noch keine Daten");
+  let lo=fixed?fixed[0]:Math.min(...vals),hi=fixed?fixed[1]:Math.max(...vals);const nt=niceTicks(lo,hi);if(!fixed){lo=nt.lo;hi=nt.hi}
+  const ymap=v=>invert?MT+(v-lo)/(hi-lo)*(CH-MT-MB):CH-MB-(v-lo)/(hi-lo)*(CH-MT-MB);
+  const pts=vals.map((v,i)=>[xAt(i,n),ymap(v)]);const path=pts.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1)).join("");
+  const av=avg?avg.map((v,i)=>(i?"L":"M")+xAt(i,n).toFixed(1)+","+ymap(v).toFixed(1)).join(""):"";
+  const last=pts[n-1];const hitW=Math.max(8,(CW-ML-MR)/Math.max(1,n));
+  return `<svg viewBox="0 0 ${CW} ${CH}" role="img">${frame(nt.t.filter(t=>t>=lo&&t<=hi),ymap,n,"Rennen")}
+   ${avg?`<path d="${av}" fill="none" stroke="#ffb000" stroke-width="3" stroke-linejoin="round"/>`:""}
+   <path d="${path}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" opacity="${avg?.55:1}"/>
+   ${n<=60?pts.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="4" fill="${color}" stroke="var(--card)" stroke-width="2"/>`).join(""):""}
+   <circle cx="${last[0]}" cy="${last[1]}" r="6" fill="${color}" stroke="var(--card)" stroke-width="2"/>
+   ${pts.map((q,i)=>`<rect class="hit" x="${q[0]-hitW/2}" y="${MT}" width="${hitW}" height="${CH-MT-MB}" data-tip="${esc(tips[i])}"/>`).join("")}</svg>`}
+function barChart(vals,tips,{diverge=false,labels=null,color="#2b78c9",xlab="Rennen"}={}){
+  const n=vals.length;if(!n||vals.every(v=>v===0)&&!labels)return emptyChart("Noch keine Daten");
+  let lo=diverge?Math.min(0,...vals):0,hi=Math.max(diverge?0:1,...vals);const nt=niceTicks(lo,hi,4,true);lo=nt.lo;hi=nt.hi;
+  const ymap=v=>CH-MB-(v-lo)/(hi-lo)*(CH-MT-MB);const W=CW-ML-MR,bw=W/n,gap=Math.min(2,bw*.2);
+  let g=nt.t.map(v=>`<line class="grid" x1="${ML}" x2="${CW-MR}" y1="${ymap(v)}" y2="${ymap(v)}"/><text class="ax" x="${ML-8}" y="${ymap(v)+4}" text-anchor="end">${v}</text>`).join("");
+  g+=vals.map((v,i)=>{const x=ML+i*bw+gap/2,w=Math.max(1,bw-gap),y0=ymap(0),y1=ymap(v);const c=diverge?(v>=0?"#1f9d55":"#e3262f"):color;
+    return `<rect x="${x.toFixed(1)}" y="${Math.min(y0,y1).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(v===0?0:1,Math.abs(y1-y0)).toFixed(1)}" rx="${Math.min(4,w/2)}" fill="${c}"/><rect class="hit" x="${(ML+i*bw).toFixed(1)}" y="${MT}" width="${bw.toFixed(1)}" height="${CH-MT-MB}" data-tip="${esc(tips[i])}"/>`}).join("");
+  g+=`<line class="base" x1="${ML}" x2="${CW-MR}" y1="${ymap(0)}" y2="${ymap(0)}"/>`;
+  if(labels)g+=labels.map((l,i)=>l?`<text class="ax" x="${(ML+(i+.5)*bw).toFixed(1)}" y="${CH-8}" text-anchor="middle">${l}</text>`:"").join("");
+  else{const xs=n<=1?[1]:[...new Set([1,Math.round(n/2),n])];g+=xs.map(i=>`<text class="ax" x="${(ML+(i-.5)*bw).toFixed(1)}" y="${CH-8}" text-anchor="middle">${i}</text>`).join("")}
+  return `<svg viewBox="0 0 ${CW} ${CH}" role="img">${g}<text class="ax" x="${CW-MR}" y="${MT-2}" text-anchor="end" style="font-weight:700">${xlab}</text></svg>`}
+
+function renderOnline(){
+  const m=OST.mode;const all=rows().filter(r=>r.m===m);
+  if(OST.scope!=="all"&&!all.some(r=>r.v===OST.scope)&&!(m==="race"&&VI[OST.scope]))OST.scope="all";
+  const list=OST.scope==="all"?all:all.filter(r=>r.v===OST.scope);const st=statsOf(list);
+  const keys=[...new Set(all.map(r=>r.v))];
+  const rallyOpts=[...new Set([...RALLIES,...rows().filter(r=>r.m==="ko").map(r=>r.v)])];
+  const dr=OST.draft;const vrA=dr.a??lastVR(m);
+  const trackField=m==="race"
+    ?`<label class="wide">Strecke<select id="o-v" required><option value="">Strecke wählen …</option>
+       <optgroup label="Hauptstrecken">${V.filter(v=>v.type==="main").sort((a,b)=>a.name.localeCompare(b.name)).map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join("")}</optgroup>
+       <optgroup label="Intermissions">${V.filter(v=>v.type==="int").sort((a,b)=>a.name.localeCompare(b.name)).map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join("")}</optgroup>
+       <optgroup label="SNES-Strecken">${V.filter(v=>v.type==="snes").map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join("")}</optgroup></select></label>`
+    :`<label class="wide">Rallye<input id="o-v" list="o-rallies" placeholder="z. B. Golden Rally" autocomplete="off"><datalist id="o-rallies">${rallyOpts.map(x=>`<option value="${esc(x)}">`).join("")}</datalist></label>`;
+  const series=list;const tipOf=(r,i)=>`#${i+1} · ${dstr(r.d)}\n${scopeName(r.m,r.v)}\nPlatz ${r.p} von ${r.n}${Number.isFinite(r.b)?`\nVR ${r.b} (${sgn(r.b-r.a)})`:""}`;
+  const plc=series.map(r=>r.p);const mov=plc.map((_,i)=>{const w=plc.slice(Math.max(0,i-4),i+1);return w.reduce((a,b)=>a+b,0)/w.length});
+  const vr=series.filter(r=>Number.isFinite(r.b));const dv=series.filter(r=>Number.isFinite(r.a)&&Number.isFinite(r.b));
+  const hist=Array.from({length:24},(_,i)=>series.filter(r=>r.p===i+1).length);
+  const per=keys.map(k=>{const l=all.filter(r=>r.v===k);return{k,...statsOf(l)}});
+  const sk=OST.sort;per.sort((a,b)=>sk==="name"?scopeName(m,a.k).localeCompare(scopeName(m,b.k)):sk==="avg"?a.avg-b.avg:sk==="dv"?b.dvSum-a.dvSum:sk==="wins"?b.wins-a.wins:b.n-a.n);
+  const recent=[...list].reverse().slice(0,25);
+  $("#v-online").innerHTML=`<div class="page">
+    <div><h1>Online</h1><p class="lead">Trag deine Online-Ergebnisse ein und sieh, wie gut du insgesamt und auf einzelnen Strecken abschneidest. Das Rating (VR) startet bei 3000 und wird für Rennen und Knockout-Tour getrennt geführt.</p></div>
+    <div class="seg" data-om role="tablist" style="align-self:flex-start">${["race","ko"].map(k=>`<button data-v="${k}" aria-pressed="${m===k}">${MODE_N[k]}</button>`).join("")}</div>
+    <form class="box" id="oform" novalidate><h3>Ergebnis eintragen · ${MODE_N[m]}</h3>
+      <div class="oform">
+        ${trackField}
+        <label>Platzierung<input id="o-p" type="number" min="1" max="24" inputmode="numeric" placeholder="1–24" value="${dr.p??""}"></label>
+        <label>Fahrer im Rennen<input id="o-n" type="number" min="2" max="24" inputmode="numeric" value="${dr.n??(m==="ko"?24:24)}"></label>
+        <label>VR vorher<input id="o-a" type="number" min="0" max="99999" inputmode="numeric" value="${vrA}"></label>
+        <label>VR nachher<input id="o-b" type="number" min="0" max="99999" inputmode="numeric" placeholder="z. B. ${vrA+40}" value="${dr.b??""}"></label>
+        <label>Änderung<span class="delta" id="o-d">–</span></label>
+        <label>Datum &amp; Uhrzeit<input id="o-t" type="datetime-local"></label>
+      </div>
+      <div class="actions" style="margin-top:14px"><button class="btn primary" type="submit">Ergebnis speichern</button><span class="msg" id="o-msg" role="status"></span></div>
+    </form>
+    <div class="scope"><label for="o-scope" class="sec-t" style="margin:0">Auswertung</label>
+      <select id="o-scope"><option value="all">Gesamt (${all.length} ${m==="race"?"Rennen":"Touren"})</option>${keys.map(k=>`<option value="${esc(k)}" ${OST.scope===k?"selected":""}>${esc(scopeName(m,k))}</option>`).join("")}</select>
+      ${OST.scope!=="all"&&m==="race"&&VI[OST.scope]?`<a class="btn" href="#v-${OST.scope}">Strecke öffnen</a>`:""}</div>
+    <div class="kpis">
+      <div class="kpi"><span class="k">${m==="race"?"Rennen":"Touren"}</span><span class="v">${st.n}</span><span class="s">Ø ${fmtN(st.avgN)} Fahrer</span></div>
+      <div class="kpi"><span class="k">Ø Platzierung</span><span class="v">${fmtN(st.avg)}</span><span class="s">Bester Platz: ${Number.isFinite(st.best)?st.best:"–"}</span></div>
+      <div class="kpi"><span class="k">Siege</span><span class="v">${st.wins}</span><span class="s">Top 3: ${fmtN(st.top3,0)} %</span></div>
+      <div class="kpi"><span class="k">Feld geschlagen</span><span class="v">${Number.isFinite(st.rel)?fmtN((1-st.rel)*100,0)+" %":"–"}</span><span class="s">Anteil Fahrer hinter dir</span></div>
+      <div class="kpi"><span class="k">VR aktuell</span><span class="v">${lastVR(m)}</span><span class="s">${OST.scope==="all"?"letzter Eintrag":"Gesamtstand"}</span></div>
+      <div class="kpi"><span class="k">VR-Bilanz</span><span class="v ${st.dvSum>0?"pos":st.dvSum<0?"neg":""}">${sgn(st.dvSum)}</span><span class="s">Ø ${Number.isFinite(st.dvAvg)?sgn(Math.round(st.dvAvg)):"–"} pro ${m==="race"?"Rennen":"Tour"}</span></div>
+    </div>
+    <div class="charts">
+      <div class="box chart"><h3>VR-Verlauf</h3><p class="sub">Rating nach jedem ${m==="race"?"Rennen":"Lauf"} · x-Achse: ${m==="race"?"Rennen":"Lauf"} Nr.</p>${lineChart(vr.map(r=>r.b),vr.map((r,i)=>tipOf(r,series.indexOf(r))))}</div>
+      <div class="box chart"><h3>Platzierungen</h3><p class="sub">Platz je ${m==="race"?"Rennen":"Lauf"} (oben = besser) · gelb: Ø der letzten 5</p>${lineChart(plc,series.map(tipOf),{invert:true,fixed:[1,24],color:"#7a3fd1",avg:mov})}</div>
+      <div class="box chart"><h3>VR-Änderungen</h3><p class="sub">Grün = VR gewonnen, rot = VR verloren · je ${m==="race"?"Rennen":"Lauf"}</p>${dv.length?barChart(dv.map(r=>r.b-r.a),dv.map(r=>tipOf(r,series.indexOf(r))),{diverge:true,xlab:"VR"}):emptyChart("Noch keine Daten")}</div>
+      <div class="box chart"><h3>Platzverteilung</h3><p class="sub">Wie oft du welchen Platz belegt hast</p>${series.length?barChart(hist,hist.map((c,i)=>`Platz ${i+1}: ${c}×`),{labels:hist.map((_,i)=>[1,4,8,12,16,20,24].includes(i+1)?i+1:""),color:"#2b78c9",xlab:"Anzahl"}):emptyChart("Noch keine Daten")}</div>
+    </div>
+    ${OST.scope==="all"?`<div class="box"><h3>Nach ${m==="race"?"Strecke":"Rallye"}</h3>${per.length?`<div class="otable"><table><thead><tr>
+      <th data-sort="name">${m==="race"?"Strecke":"Rallye"}</th><th data-sort="n">${m==="race"?"Rennen":"Touren"}</th><th data-sort="avg">Ø Platz</th><th data-sort="wins">Siege</th><th>Bester</th><th data-sort="dv">VR-Bilanz</th><th>Ø VR</th></tr></thead><tbody>
+      ${per.map(x=>`<tr data-scope="${esc(x.k)}"><td><span class="nm">${m==="race"&&VI[x.k]?emblem(VI[x.k].type,24):""}${esc(scopeName(m,x.k))}</span></td><td>${x.n}</td><td>${fmtN(x.avg)}</td><td>${x.wins}</td><td>${x.best}</td><td class="${x.dvSum>0?"pos":x.dvSum<0?"neg":""}">${sgn(x.dvSum)}</td><td>${Number.isFinite(x.dvAvg)?sgn(Math.round(x.dvAvg)):"–"}</td></tr>`).join("")}
+      </tbody></table></div><p class="sync" style="margin:8px 0 0">Spaltenkopf antippen zum Sortieren, Zeile antippen für die Einzelauswertung.</p>`:`<p class="note-empty">Sobald du Ergebnisse einträgst, siehst du hier jede ${m==="race"?"Strecke":"Rallye"} im Vergleich.</p>`}</div>`:""}
+    <div class="box"><h3>Letzte Ergebnisse</h3><div class="olist">${recent.map(r=>`<div class="orow"><span class="place">${r.p}<small>/${r.n}</small></span><span>${esc(scopeName(r.m,r.v))}<br><small>${dstr(r.d)}</small></span><span class="${Number.isFinite(r.b)?(r.b-r.a>0?"pos":r.b-r.a<0?"neg":""):""}" style="font-weight:800">${Number.isFinite(r.b)?sgn(r.b-r.a)+" VR":"–"}</span><button class="del ${OST.armed===r.id?"arm":""}" data-del="${r.id}">${OST.armed===r.id?"Wirklich löschen?":"Löschen"}</button></div>`).join("")||`<p class="note-empty">Noch keine Ergebnisse eingetragen.</p>`}</div></div>
+  </div>`;
+  const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());$("#o-t").value=now.toISOString().slice(0,16);
+  if(dr.v)$("#o-v").value=dr.v;else if(m==="race"&&OST.scope!=="all"&&VI[OST.scope])$("#o-v").value=OST.scope;
+  paintDelta();
+}
+function paintDelta(){const a=+$("#o-a").value,bs=$("#o-b").value;const el=$("#o-d");if(!el)return;if(bs===""||!Number.isFinite(a)){el.textContent="–";el.className="delta";return}
+  const d=+bs-a;el.textContent=sgn(d);el.className="delta "+(d>0?"pos":d<0?"neg":"")}
+$("#v-online").addEventListener("input",e=>{if(e.target.id==="o-a"||e.target.id==="o-b")paintDelta()});
+$("#v-online").addEventListener("change",e=>{if(e.target.id==="o-scope"){OST.scope=e.target.value;renderOnline()}});
+$("#v-online").addEventListener("click",e=>{
+  const mb=e.target.closest("[data-om] button");if(mb){OST.mode=mb.dataset.v;OST.scope="all";OST.draft={};renderOnline();return}
+  const th=e.target.closest("th[data-sort]");if(th){OST.sort=th.dataset.sort;renderOnline();return}
+  const tr=e.target.closest("tr[data-scope]");if(tr){OST.scope=tr.dataset.scope;renderOnline();$("#v-online").scrollTop=0;return}
+  const del=e.target.closest("[data-del]");if(del){const id=del.dataset.del;if(OST.armed===id){O[id]={del:1,t:Date.now()};saveO();queue(id);OST.armed=null}else OST.armed=id;renderOnline()}
+});
+$("#v-online").addEventListener("submit",e=>{e.preventDefault();const m=OST.mode;
+  const v=($("#o-v").value||"").trim(),p=+$("#o-p").value,n=+$("#o-n").value,a=$("#o-a").value===""?NaN:+$("#o-a").value,bs=$("#o-b").value,b=bs===""?NaN:+bs;
+  const msg=t=>{$("#o-msg").textContent=t;$("#o-msg").className="msg neg"};
+  if(!v)return msg(m==="race"?"Bitte eine Strecke wählen.":"Bitte eine Rallye angeben.");
+  if(!(n>=2&&n<=24))return msg("Die Fahrerzahl muss zwischen 2 und 24 liegen.");
+  if(!(p>=1&&p<=n&&Number.isInteger(p)))return msg(`Die Platzierung muss zwischen 1 und ${n||24} liegen.`);
+  if(Number.isFinite(b)&&!Number.isFinite(a))return msg("Bitte auch das VR vorher eintragen.");
+  const tv=$("#o-t").value?new Date($("#o-t").value).getTime():Date.now();
+  const id="o-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  putO(id,{m,v,p,n,a:Number.isFinite(a)?a:null,b:Number.isFinite(b)?b:null,d:tv});
+  OST.draft={v,n};renderOnline();$("#o-msg").textContent=`Gespeichert: Platz ${p} von ${n}${Number.isFinite(b)?` · ${sgn(b-a)} VR`:""}.`;$("#o-msg").className="msg pos";
+});
+/* Tooltip für alle Diagramme */
+document.addEventListener("pointermove",e=>{const h=e.target.closest&&e.target.closest("[data-tip]");const tip=$("#tip");
+  if(!h){tip.hidden=true;return}tip.textContent=h.dataset.tip;tip.hidden=false;const w=tip.offsetWidth,hh=tip.offsetHeight;
+  let x=e.clientX+14,y=e.clientY-hh-10;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y<8)y=e.clientY+16;tip.style.left=x+"px";tip.style.top=y+"px"});
 
 /* =====================================================================
    SUCHE (Kopfleiste)
@@ -977,8 +1046,8 @@ function refreshBadges(){
   const w=V.filter(v=>get(v.id).w).length;$("#mp-t").textContent=`${w}/${V.length}`;$("#mp-b").style.width=(w/V.length*100)+"%";
   if(!$("#v-map").hidden){updateMarkers()}
 }
-function show(view){["v-map","v-detail","v-all","v-prog"].forEach(v=>$("#"+v).hidden=v!==view);
-  const nav=view==="v-map"||view==="v-detail"?"karte":view==="v-all"?"alle":"fortschritt";
+function show(view){["v-map","v-detail","v-all","v-prog","v-online"].forEach(v=>$("#"+v).hidden=v!==view);
+  const nav=view==="v-map"||view==="v-detail"?"karte":view==="v-all"?"alle":view==="v-online"?"online":"fortschritt";
   document.querySelectorAll("[data-nav]").forEach(a=>a.setAttribute("aria-current",a.dataset.nav===nav?"page":"false"))}
 let mapReady=false;
 function route(){
@@ -986,6 +1055,7 @@ function route(){
   if(h.startsWith("v-")){show("v-detail");renderDetail(h.slice(2));return}
   if(h==="alle"){show("v-all");renderAll();return}
   if(h==="fortschritt"){show("v-prog");renderProg();return}
+  if(h==="online"){show("v-online");renderOnline();return}
   show("v-map");
   if(!mapReady){renderMap();mapReady=true;requestAnimationFrame(fitVB)}else updateMarkers();
   const id=h.startsWith("strecke-")?h.slice(8):null;
