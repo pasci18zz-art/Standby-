@@ -138,6 +138,11 @@ main{flex:1;min-height:0;position:relative}
 .stage .canvas svg{width:100%;height:100%;display:block}
 .stage .canvas img{width:100%;height:100%;object-fit:contain;background:#0b1020}
 .stage-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.src-row{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:0 14px 12px;font-size:12px;color:var(--ink-soft)}
+.src-row label{font-weight:800;font-family:var(--f-display)}
+.src-row input{flex:1;min-width:180px;border:3px solid var(--outline);border-radius:10px;padding:5px 10px;background:var(--paper);font-size:13px}
+.src-row span{flex-basis:100%}
+.src-row a{color:var(--kart);font-weight:700}
 .stage-bar .cap{flex:1;min-width:160px;font-size:12px;color:var(--ink-soft)}
 .btn{border:0;border-radius:12px;padding:8px 14px;font-family:var(--f-display);font-weight:800;font-size:13px;background:var(--chip);display:inline-flex;align-items:center;gap:6px}
 .btn:hover{background:var(--gold);color:#16203a}
@@ -618,20 +623,36 @@ function markSel(id){document.querySelectorAll(".mk").forEach(m=>m.classList.tog
    ===================================================================== */
 function loopPts(seed,cx,cy,rx,ry,n){const r=rng(seed);const pts=[];
   for(let i=0;i<n;i++){const a=i/n*Math.PI*2+(r()-.5)*.4;let k=.55+r()*.45;if(r()<.22)k*=.62;pts.push([cx+Math.cos(a)*rx*k,cy+Math.sin(a)*ry*k])}return pts}
+/* Eigene, frei erfundene Schema-Layouts (kein Nachbau der Originalkarten) */
+function scenery(biome,r){
+  let o="";const P=(n,f)=>{for(let i=0;i<n;i++)o+=f(r()*1000,r()*660,r())};
+  if(biome==="forest"||biome==="jungle")P(70,(x,y,k)=>{const s=14+k*16;return `<circle cx="${x|0}" cy="${(y+5)|0}" r="${s|0}" fill="#000" opacity=".15"/><circle cx="${x|0}" cy="${y|0}" r="${s|0}" fill="${biome==="jungle"?"#1f6b33":"#2f8a3a"}"/><circle cx="${(x-s*.3)|0}" cy="${(y-s*.3)|0}" r="${(s*.45)|0}" fill="#fff" opacity=".12"/>`});
+  else if(biome==="snow")P(60,(x,y,k)=>{const s=12+k*14;return `<path d="M${x|0},${(y-s*1.6)|0}l${s|0},${(s*2)|0}h${(-s*2)|0}z" fill="#3f7a5a"/><path d="M${x|0},${(y-s*1.6)|0}l${(s*.5)|0},${(s*.7)|0}h${(-s)|0}z" fill="#fff"/>`});
+  else if(biome==="desert"||biome==="savanna")P(40,(x,y,k)=>k<.5?`<ellipse cx="${x|0}" cy="${y|0}" rx="${(30+k*40)|0}" ry="${(10+k*8)|0}" fill="#000" opacity=".07"/>`:`<path d="M${x|0},${y|0}v-26m0,10h-9v-9m9,4h9v-10" stroke="#3f8a3a" stroke-width="7" stroke-linecap="round" fill="none"/>`);
+  else if(biome==="canyon")P(30,(x,y,k)=>`<ellipse cx="${x|0}" cy="${y|0}" rx="${(26+k*30)|0}" ry="${(14+k*14)|0}" fill="#a8452a" stroke="#7a2f1e" stroke-width="4"/>`);
+  else if(biome==="volcano")P(26,(x,y,k)=>`<ellipse cx="${x|0}" cy="${y|0}" rx="${(22+k*30)|0}" ry="${(10+k*12)|0}" fill="#ff6a1a" stroke="#ffb02e" stroke-width="3" opacity=".85"/>`);
+  else if(biome==="autumn")P(70,(x,y,k)=>`<circle cx="${x|0}" cy="${y|0}" r="${(12+k*14)|0}" fill="${k<.5?"#d4552a":"#f0a52a"}"/>`);
+  else if(biome==="coast")o+=`<path d="M0,500 C200,470 400,560 620,520 S900,470 1000,500 V660 H0Z" fill="#2fb3c9"/><path d="M0,500 C200,470 400,560 620,520 S900,470 1000,500" stroke="#fff" stroke-width="6" fill="none" opacity=".7"/>`+Array.from({length:40},()=>{const x=r()*1000,y=540+r()*110;return `<path d="M${x|0},${y|0}q8,-6 16,0t16,0" stroke="#fff" stroke-opacity=".5" stroke-width="3" fill="none"/>`}).join("");
+  else if(biome==="sky")P(140,(x,y,k)=>`<circle cx="${x|0}" cy="${y|0}" r="${(k*2.4+.4).toFixed(1)}" fill="#fff" opacity="${(.3+k*.7).toFixed(2)}"/>`);
+  else P(80,(x,y,k)=>k<.3?`<circle cx="${x|0}" cy="${y|0}" r="5" fill="${["#fff","#ffd400","#ff7aa8"][(k*10|0)%3]}"/>`:`<circle cx="${x|0}" cy="${y|0}" r="${(10+k*12)|0}" fill="#6fae2d" opacity=".45"/>`);
+  return o;
+}
 function mainLayout(v,small){
   const t=T[v.track];const b=BIOMES[t.biome];const r=rng(v.id+"deko");
   const pts=loopPts(v.id,500,335,400,255,small?9:12);const d=smooth(pts);
-  const road=t.biome==="sky"?"#2a2f6b":t.biome==="snow"?"#5a6680":"#4a4f5c";
-  let deco="";if(!small)for(let i=0;i<90;i++){const x=r()*1000,y=r()*660,s=5+r()*12;
-    deco+=t.biome==="sky"?`<circle cx="${x|0}" cy="${y|0}" r="${(s/5).toFixed(1)}" fill="#fff" opacity="${(.3+r()*.7).toFixed(2)}"/>`
-      :`<circle cx="${x|0}" cy="${y|0}" r="${s|0}" fill="${b.a}" opacity=".35"/>`}
-  const edge=t.biome==="sky"?`<path d="${d}" fill="none" stroke="url(#rbw2)" stroke-width="${small?26:70}" stroke-linejoin="round"/>`
-    :`<path d="${d}" fill="none" stroke="#fff" stroke-width="${small?24:66}" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="#e3262f" stroke-width="${small?24:66}" stroke-dasharray="16 16" stroke-linejoin="round"/>`;
-  return `<svg viewBox="0 0 1000 660" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Schematisches Layout ${esc(v.name)}">
-   <defs><linearGradient id="rbw2" x1="0" x2="1"><stop offset="0" stop-color="#ff4d6d"/><stop offset=".3" stop-color="#ffc31f"/><stop offset=".55" stop-color="#3ddc84"/><stop offset=".8" stop-color="#3fa9ff"/><stop offset="1" stop-color="#b65cff"/></linearGradient></defs>
-   <rect width="1000" height="660" fill="${b.g}"/>${deco}
-   ${edge}<path class="trk" d="${d}" fill="none" stroke="${road}" stroke-width="${small?16:52}" stroke-linejoin="round"/>
-   ${small?"":`<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="20 18"/><g class="dyn"></g>`}
+  const sky=t.biome==="sky";const road=sky?"#262a66":t.biome==="snow"?"#5a6680":"#41464f";
+  const W=small?16:54;
+  const bg=sky?`<rect width="1000" height="660" fill="#0f1236"/><rect width="1000" height="660" fill="url(#vg-${v.id})"/>`:`<rect width="1000" height="660" fill="${b.g}"/>`;
+  return `<svg viewBox="0 0 1000 660" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Schema-Layout ${esc(v.name)}">
+   <defs><linearGradient id="rbw2-${v.id}" x1="0" x2="1"><stop offset="0" stop-color="#ff4d6d"/><stop offset=".3" stop-color="#ffc31f"/><stop offset=".55" stop-color="#3ddc84"/><stop offset=".8" stop-color="#3fa9ff"/><stop offset="1" stop-color="#b65cff"/></linearGradient>
+     <radialGradient id="vg-${v.id}" cx="50%" cy="50%" r="70%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>
+   ${bg}${small?"":scenery(t.biome,r)}
+   ${small?"":`<path d="${d}" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="${W+30}" stroke-linejoin="round" transform="translate(0,10)"/>`}
+   <path d="${d}" fill="none" stroke="#16203a" stroke-width="${W+(small?10:30)}" stroke-linejoin="round"/>
+   <path d="${d}" fill="none" stroke="${sky?`url(#rbw2-${v.id})`:"#fff"}" stroke-width="${W+(small?6:20)}" stroke-linejoin="round"/>
+   ${sky?"":`<path d="${d}" fill="none" stroke="#e3262f" stroke-width="${W+(small?6:20)}" stroke-dasharray="18 18" stroke-linejoin="round"/>`}
+   <path class="trk" d="${d}" fill="none" stroke="${road}" stroke-width="${W}" stroke-linejoin="round"/>
+   ${small?"":`<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-dasharray="22 20"/><g class="dyn"></g><rect width="1000" height="660" fill="url(#vg-${v.id})" pointer-events="none"/>`}
   </svg>`;
 }
 function snesLayout(v,small){
@@ -689,6 +710,18 @@ function decorate(svgEl,v){ // Richtungspfeile, Start/Ziel, Abschnittsmarken
   }else{
     const s=at(0);out+=`<g transform="translate(${s.x},${s.y}) rotate(${s.a+90})"><g>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${-28+i*7}" y="-7" width="7" height="7" fill="${i%2?"#fff":"#16203a"}"/><rect x="${-28+i*7}" y="0" width="7" height="7" fill="${i%2?"#16203a":"#fff"}"/>`).join("")}</g></g>`;
     for(let i=1;i<9;i++){const q=at(i/9);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a})"><path d="M-8,-10 L6,0 L-8,10" fill="none" stroke="#ffc31f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>`}
+    if(v.type==="main"){
+      const norm=f=>{const q=at(f);const a=q.a*Math.PI/180;return{x:q.x,y:q.y,nx:-Math.sin(a),ny:Math.cos(a),a:q.a}};
+      [.2,.52,.8].forEach(f=>{const q=norm(f);for(let k=-1.5;k<=1.5;k++){const x=q.x+q.nx*k*13,y=q.y+q.ny*k*13;
+        out+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${q.a+45})"><rect x="-6" y="-6" width="12" height="12" rx="2" fill="url(#ibx)" stroke="#fff" stroke-width="1.5"/></g>`}});
+      [.33,.68].forEach(f=>{const q=at(f);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a})"><rect x="-22" y="-16" width="44" height="32" rx="5" fill="#ff8a00" stroke="#16203a" stroke-width="3"/><path d="M-12,-9 L-2,0 L-12,9 M2,-9 L12,0 L2,9" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`});
+      const N=240,P=[];for(let i=0;i<N;i++)P.push(at(i/N));const turn=i=>{let d=P[(i+6)%N].a-P[(i-6+N)%N].a;while(d>180)d-=360;while(d<-180)d+=360;return d};
+      const cand=[];for(let i=0;i<N;i++){const k=Math.abs(turn(i));if(k>38&&k>=Math.abs(turn((i+1)%N))&&k>=Math.abs(turn((i-1+N)%N)))cand.push({i,k,s:Math.sign(turn(i))})}
+      const pick=[];cand.sort((a,b)=>b.k-a.k).forEach(c=>{if(pick.length<7&&pick.every(p=>Math.min(Math.abs(p.i-c.i),N-Math.abs(p.i-c.i))>14))pick.push(c)});
+      pick.sort((a,b)=>a.i-b.i).forEach((c,j)=>{const q=P[c.i];const a=q.a*Math.PI/180;const off=-c.s*58;const x=q.x-Math.sin(a)*off,y=q.y+Math.cos(a)*off;
+        out+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><rect x="-19" y="-14" width="38" height="28" rx="8" fill="#fff" stroke="#16203a" stroke-width="3"/><text y="6" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-style="italic" font-size="15" fill="#16203a">K${j+1}</text></g>`});
+      g.insertAdjacentHTML("beforebegin",`<defs><linearGradient id="ibx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd400"/><stop offset=".5" stop-color="#ff7aa8"/><stop offset="1" stop-color="#3fa9ff"/></linearGradient></defs>`);
+    }
     const lp=v.type==="main"&&LAPS[v.track];if(lp){for(let i=1;i<lp[1];i++){const m=at(i/lp[1]);out+=`<g transform="translate(${m.x},${m.y})"><circle r="17" fill="#ffd400" stroke="#16203a" stroke-width="4"/><text y="6" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-size="17" fill="#16203a">${i}</text></g>`}}
     const q=at(0.04);out+=`<g transform="translate(${q.x},${q.y-46})"><rect x="-44" y="-15" width="88" height="28" rx="14" fill="#16203a"/><text y="5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-size="14" fill="#fff">START</text></g>`;
   }
@@ -768,6 +801,7 @@ async function renderDetail(id){
           <label class="btn primary" for="upl">Streckenkarte hochladen</label><input id="upl" type="file" accept="image/*" hidden>
           <button class="btn" id="delImg" hidden>Bild entfernen</button>
         </div>
+        <div class="src-row" id="srcRow" hidden><label for="srcIn">Bildquelle</label><input id="srcIn" type="text" placeholder="z. B. Super Mario Wiki – https://…" value="${esc(d.src||"")}"><span id="srcOut"></span></div>
       </div>
       <div class="side">
         <div class="box">
@@ -798,7 +832,9 @@ async function loadImg(id){
   const blob=await IDB.get("img-"+id);if(curV?.id!==id)return;
   if(imgURL){URL.revokeObjectURL(imgURL);imgURL=null}
   const has=!!blob;$("#delImg").hidden=!has;$("#tglImg").hidden=!has;
+  $("#srcRow").hidden=!has;
   if(has){imgURL=URL.createObjectURL(blob);if(showOwn){$("#canvas").innerHTML=`<img src="${imgURL}" alt="Eigenes Streckenbild ${esc(curV.name)}">`;$("#cap").textContent="Dein eigenes Bild (nur auf diesem Gerät gespeichert).";$("#tglImg").textContent="Schema zeigen"}}
+  paintSrc();
 }
 function shrink(file){return new Promise(res=>{const im=new Image();im.onload=()=>{const m=1800,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k|0;c.height=im.height*k|0;c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>res(b||file),"image/jpeg",.88);URL.revokeObjectURL(im.src)};im.onerror=()=>res(file);im.src=URL.createObjectURL(file)})}
 $("#v-detail").addEventListener("click",async e=>{
@@ -826,7 +862,11 @@ $("#v-detail").addEventListener("dragleave",e=>{const st=e.target.closest(".stag
 $("#v-detail").addEventListener("drop",e=>{const st=e.target.closest(".stage");if(!st)return;e.preventDefault();st.classList.remove("drop");putImg(e.dataTransfer.files[0])});
 function saveNote(val){if(!curV)return;const id=curV.id;$("#saved").textContent="Speichert …";clearTimeout(noteTimer);
   noteTimer=setTimeout(()=>{setV(id,{n:val});const s=$("#saved");if(s&&curV?.id===id)s.textContent="✓ Gespeichert"},500)}
-$("#v-detail").addEventListener("input",e=>{if(e.target.tagName==="TEXTAREA")saveNote(e.target.value)});
+$("#v-detail").addEventListener("input",e=>{if(e.target.tagName==="TEXTAREA")saveNote(e.target.value);
+  if(e.target.id==="srcIn"&&curV){clearTimeout(srcT);const id=curV.id,val=e.target.value;srcT=setTimeout(()=>{setV(id,{src:val});paintSrc()},500)}});
+let srcT=null;
+function paintSrc(){const o=$("#srcOut");if(!o||!curV)return;const v=(get(curV.id).src||"").trim();const m=v.match(/https?:\/\/\S+/);
+  o.innerHTML=v?`Quelle: ${m?esc(v.replace(m[0],"").replace(/[–-]\s*$/,"").trim())+` <a href="${esc(m[0])}" target="_blank" rel="noopener">${esc(m[0].replace(/^https?:\/\//,"").slice(0,40))}</a>`:esc(v)}`:"Noch keine Quelle angegeben."}
 
 /* =====================================================================
    ALLE STRECKEN
