@@ -80,7 +80,10 @@ main{flex:1;min-height:0;position:relative}
 .mk:focus{outline:none}
 .mk .halo{opacity:0;transition:opacity .2s}
 .mk:hover .halo,.mk.sel .halo,.mk:focus-visible .halo{opacity:1}
-.mk .lbl{font-family:var(--f-display);font-weight:800;font-style:italic;paint-order:stroke;stroke:#16203a;stroke-width:5px;stroke-linejoin:round;fill:#fff;pointer-events:none}
+.mk .lbl{font-family:var(--f-display);font-weight:900;font-style:italic;fill:#16203a;pointer-events:none}
+.mk .plate{transition:transform .18s}
+.mk:hover .plate rect,.mk.sel .plate rect{fill:#ffd400}
+.mk .plate.hov{opacity:0;transition:opacity .2s}.mk:hover .plate.hov,.mk.sel .plate.hov,.mk:focus-visible .plate.hov{opacity:1}
 .mk.dim{opacity:.45}
 .conn path{fill:none;stroke-linecap:round}
 .map-ui{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;z-index:5}
@@ -232,7 +235,56 @@ main{flex:1;min-height:0;position:relative}
   .legend{display:none}
   .rates{grid-template-columns:repeat(5,1fr)}
   .hint{font-size:12px}
+  .d-title{order:3;flex-basis:100%}
+  .d-head{justify-content:space-between}
+  .nav{padding-bottom:6px}
+  .nav a{white-space:nowrap;font-size:13px;padding:5px 12px}
 }
+
+/* ===== Mario-Kart-World-Stil: Sticker-Flächen, dicke Konturen, harte Schatten, Gelb als Auswahlfarbe ===== */
+:root{--outline:#16203a;--hl:#ffd400;--hl-soft:#fff3a6;--stripe:rgba(43,120,201,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--outline:#02040b;--hl-soft:#4a4520;--stripe:rgba(255,255,255,.03)}}
+:root[data-theme="dark"]{--outline:#02040b;--hl-soft:#4a4520;--stripe:rgba(255,255,255,.03)}
+body{background-color:var(--paper);background-image:repeating-linear-gradient(-45deg,transparent 0 26px,var(--stripe) 26px 52px)}
+.top{background:linear-gradient(100deg,#e60012 0%,#ff3b1f 100%);border-bottom:4px solid var(--outline)}
+.top::after{bottom:-10px;height:6px}
+.brand b{font-size:22px;-webkit-text-stroke:0}
+.nav a{transform:skewX(-10deg);border:3px solid var(--outline);background:#fff;color:#16203a;border-radius:12px;box-shadow:0 4px 0 var(--outline);padding:6px 16px}
+.nav a:hover{background:var(--hl);transform:skewX(-10deg) translateY(-2px);box-shadow:0 6px 0 var(--outline)}
+.nav a[aria-current="page"]{background:var(--hl);color:#16203a}
+.search input{border:3px solid var(--outline);box-shadow:0 4px 0 var(--outline)}
+.vcard,.box,.stage,.cup,.stat,.filters,.back,.d-nav button,.map-ui button,.legend,.sres,.rrow,.switch .sw,.switch select,.btn,.win{border:3px solid var(--outline);box-shadow:0 5px 0 var(--outline)}
+.vcard,.rrow,.cup li button,.btn,.back,.d-nav button,.map-ui button,.switch .sw{transition:transform .12s,box-shadow .12s,background .12s}
+.vcard:hover,.rrow:hover,.btn:hover,.back:hover,.d-nav button:hover,.map-ui button:hover,.switch .sw:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--outline);background:var(--hl);color:#16203a;border-color:var(--outline)}
+.vcard:active,.rrow:active,.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--outline)}
+.vcard:hover small,.rrow:hover small{color:#3a4566}
+.switch .sw[aria-current="true"]{background:var(--hl);color:#16203a;border-color:var(--outline)}
+.panel{border:4px solid var(--outline);box-shadow:0 8px 0 var(--outline)}
+.p-head{border-bottom:4px solid var(--outline)}
+.p-head h2,.d-title h1,.page h1{text-transform:none;-webkit-text-stroke:0;letter-spacing:-.5px}
+.d-title h1,.page h1{text-shadow:3px 3px 0 var(--hl)}
+.sec-t,.box h3,.stat .k{font-style:italic;font-weight:900;color:var(--ink)}
+.sec-t::before,.box h3:first-child::before{content:"";width:12px;height:12px;border-radius:3px;background:var(--hl);border:2px solid var(--outline);transform:skewX(-12deg);flex:none}
+.pill{border:2px solid var(--outline);font-style:italic;font-weight:900;transform:skewX(-8deg)}
+.tabs{border:3px solid var(--outline);background:var(--chip)}
+.tabs button[aria-selected="true"]{background:var(--hl);color:#16203a;box-shadow:none}
+.seg{border:3px solid var(--outline)}
+.seg button[aria-pressed="true"]{background:var(--hl);color:#16203a}
+.rates button{border:3px solid var(--outline);box-shadow:0 3px 0 var(--outline)}
+.rates button.fill{box-shadow:0 3px 0 var(--outline)}
+.rate-badge{border:2px solid var(--outline)}
+.rate-badge.set{background:var(--hl)}
+.win[aria-checked="true"]{background:var(--hl-soft)}
+.win .tro{border:3px solid var(--outline)}
+.notes textarea,.filters input,.filters select,.backup textarea{border:3px solid var(--outline)}
+.stage .canvas{border-bottom:3px solid var(--outline)}
+.stage.drop{outline:5px dashed var(--hl);outline-offset:4px}
+.pbar{border:2px solid var(--outline);height:16px}
+.hist i{border:2px solid var(--outline)}
+.hint{border:3px solid var(--outline);box-shadow:0 4px 0 var(--outline);font-style:italic;font-family:var(--f-display);font-weight:800}
+.p-close{border:3px solid #fff}
+.cup li button{border:2px solid var(--outline)}
+.stage-bar{border-top:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -262,6 +314,7 @@ main{flex:1;min-height:0;position:relative}
         <b>Legende</b>
         <span><svg width="16" height="16" viewBox="0 0 24 24"><path fill="#ffc31f" stroke="#16203a" stroke-width="2" d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21l1.5-7L2 9.3l7-.8z"/></svg>Hauptstrecke gewonnen</span>
         <span><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="3" fill="#5b5fc7"/></svg>Mit SNES-Strecke</span>
+        <span><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="url(#lgR)" stroke-width="3"/><defs><linearGradient id="lgR"><stop offset="0" stop-color="#ff4d6d"/><stop offset=".5" stop-color="#3ddc84"/><stop offset="1" stop-color="#b65cff"/></linearGradient></defs></svg>Regenbogenring: Rainbow Road</span>
         <span><i style="border-color:#e3262f"></i>Intermission von hier</span>
         <span><i style="border-color:#3b82f6;border-top-style:dashed"></i>Intermission hierher</span>
       </div>
@@ -357,6 +410,11 @@ const SNES=[
 const ROUTES=[["mario-bros-circuit","crown-city",3],["mario-bros-circuit","whistlestop-summit",3],["mario-bros-circuit","desert-hills",3],["mario-bros-circuit","shy-guy-bazaar",3],["mario-bros-circuit","wario-stadium",3],["mario-bros-circuit","choco-mountain",3],["mario-bros-circuit","toads-factory",4,["Hubschrauber (nach Abschnitt 2-2)","Lastwagen (nach Abschnitt 2-2)"]],["crown-city","mario-bros-circuit",3],["crown-city","whistlestop-summit",3],["crown-city","dk-spaceport",8],["crown-city","desert-hills",4],["crown-city","wario-stadium",4],["crown-city","koopa-troopa-beach",4],["crown-city","faraway-oasis",4],["crown-city","moo-moo-meadows",4],["crown-city","choco-mountain",3],["crown-city","peach-stadium",3],["whistlestop-summit","mario-bros-circuit",3],["whistlestop-summit","crown-city",3],["whistlestop-summit","dk-spaceport",8],["whistlestop-summit","desert-hills",3],["whistlestop-summit","koopa-troopa-beach",5,["Motorboot (nach Abschnitt 3-2)"]],["whistlestop-summit","choco-mountain",4,["Tornado (nach Abschnitt 2-2)"]],["dk-spaceport","mario-bros-circuit",4],["dk-spaceport","crown-city",3],["dk-spaceport","whistlestop-summit",3],["dk-spaceport","desert-hills",4],["dk-spaceport","koopa-troopa-beach",4],["dk-spaceport","peach-stadium",5,["Motorboot (nach Abschnitt 3-1)","Hubschrauber (nach Abschnitt 3-2)"]],["desert-hills","mario-bros-circuit",3],["desert-hills","crown-city",4],["desert-hills","whistlestop-summit",3],["desert-hills","shy-guy-bazaar",3],["desert-hills","koopa-troopa-beach",6,["Hubschrauber (nach Abschnitt 4-1)"]],["shy-guy-bazaar","mario-bros-circuit",3],["shy-guy-bazaar","desert-hills",3],["shy-guy-bazaar","wario-stadium",3],["shy-guy-bazaar","airship-fortress",3],["shy-guy-bazaar","choco-mountain",4],["wario-stadium","mario-bros-circuit",3],["wario-stadium","crown-city",4],["wario-stadium","shy-guy-bazaar",3],["wario-stadium","airship-fortress",3],["wario-stadium","dry-bones-burnout",4],["wario-stadium","choco-mountain",3],["wario-stadium","toads-factory",3],["wario-stadium","bowsers-castle",3],["airship-fortress","shy-guy-bazaar",3],["airship-fortress","wario-stadium",3],["airship-fortress","dry-bones-burnout",4],["airship-fortress","toads-factory",4],["airship-fortress","bowsers-castle",3],["dk-pass","starview-peak",3],["dk-pass","sky-high-sundae",3],["dk-pass","wario-shipyard",3],["dk-pass","salty-salty-speedway",3],["dk-pass","cheep-cheep-falls",3],["dk-pass","dandelion-depths",3],["dk-pass","moo-moo-meadows",4],["starview-peak","dk-pass",3],["starview-peak","sky-high-sundae",3],["starview-peak","wario-shipyard",4],["starview-peak","cheep-cheep-falls",4],["starview-peak","dandelion-depths",3],["starview-peak","boo-cinema",4],["starview-peak","mario-circuit",4],["sky-high-sundae","dk-pass",3],["sky-high-sundae","starview-peak",3],["sky-high-sundae","wario-shipyard",3],["sky-high-sundae","salty-salty-speedway",4],["sky-high-sundae","cheep-cheep-falls",4],["sky-high-sundae","dandelion-depths",4],["wario-shipyard","dk-pass",3],["wario-shipyard","starview-peak",4],["wario-shipyard","sky-high-sundae",3],["wario-shipyard","peach-beach",4,["Motorboot (nach Abschnitt 1-2)"]],["wario-shipyard","salty-salty-speedway",3],["wario-shipyard","cheep-cheep-falls",4],["koopa-troopa-beach","crown-city",3],["koopa-troopa-beach","dk-spaceport",8],["koopa-troopa-beach","faraway-oasis",3],["koopa-troopa-beach","dino-dino-jungle",3],["koopa-troopa-beach","peach-stadium",3],["faraway-oasis","crown-city",4],["faraway-oasis","koopa-troopa-beach",4],["faraway-oasis","peach-beach",4],["faraway-oasis","salty-salty-speedway",3],["faraway-oasis","dino-dino-jungle",3],["faraway-oasis","great-q-block-ruins",3],["faraway-oasis","cheep-cheep-falls",3],["faraway-oasis","peach-stadium",3],["peach-beach","wario-shipyard",3,["Motorboot (nach Abschnitt 2-1)"]],["peach-beach","faraway-oasis",3],["peach-beach","salty-salty-speedway",3],["peach-beach","dino-dino-jungle",4],["peach-beach","great-q-block-ruins",3],["salty-salty-speedway","dk-pass",3],["salty-salty-speedway","wario-shipyard",3],["salty-salty-speedway","faraway-oasis",3],["salty-salty-speedway","peach-beach",4],["salty-salty-speedway","dino-dino-jungle",4],["salty-salty-speedway","great-q-block-ruins",3],["salty-salty-speedway","cheep-cheep-falls",3],["dino-dino-jungle","koopa-troopa-beach",4],["dino-dino-jungle","faraway-oasis",3],["dino-dino-jungle","peach-beach",5],["dino-dino-jungle","salty-salty-speedway",4],["dino-dino-jungle","great-q-block-ruins",3],["great-q-block-ruins","koopa-troopa-beach",5],["great-q-block-ruins","faraway-oasis",3],["great-q-block-ruins","peach-beach",4],["great-q-block-ruins","salty-salty-speedway",3],["great-q-block-ruins","dino-dino-jungle",3],["cheep-cheep-falls","dk-pass",3],["cheep-cheep-falls","starview-peak",4],["cheep-cheep-falls","wario-shipyard",4],["cheep-cheep-falls","faraway-oasis",3],["cheep-cheep-falls","salty-salty-speedway",3],["cheep-cheep-falls","dandelion-depths",3],["cheep-cheep-falls","moo-moo-meadows",3],["cheep-cheep-falls","choco-mountain",4],["cheep-cheep-falls","peach-stadium",3],["dandelion-depths","dk-pass",3],["dandelion-depths","starview-peak",3],["dandelion-depths","sky-high-sundae",4],["dandelion-depths","cheep-cheep-falls",3],["dandelion-depths","boo-cinema",3],["dandelion-depths","moo-moo-meadows",3],["dandelion-depths","toads-factory",4],["dandelion-depths","acorn-heights",4],["dandelion-depths","mario-circuit",3],["boo-cinema","starview-peak",4],["boo-cinema","dandelion-depths",3],["boo-cinema","dry-bones-burnout",4],["boo-cinema","acorn-heights",3],["boo-cinema","mario-circuit",3],["dry-bones-burnout","wario-stadium",4],["dry-bones-burnout","airship-fortress",4],["dry-bones-burnout","boo-cinema",4],["dry-bones-burnout","moo-moo-meadows",4],["dry-bones-burnout","toads-factory",3],["dry-bones-burnout","bowsers-castle",3],["dry-bones-burnout","acorn-heights",3],["dry-bones-burnout","mario-circuit",3],["moo-moo-meadows","crown-city",4],["moo-moo-meadows","dk-pass",4],["moo-moo-meadows","cheep-cheep-falls",3],["moo-moo-meadows","dandelion-depths",3],["moo-moo-meadows","dry-bones-burnout",4],["moo-moo-meadows","choco-mountain",3],["moo-moo-meadows","toads-factory",3],["moo-moo-meadows","mario-circuit",3],["moo-moo-meadows","peach-stadium",3],["choco-mountain","mario-bros-circuit",3],["choco-mountain","crown-city",3],["choco-mountain","whistlestop-summit",4,["Tornado (nach Abschnitt 2-1)"]],["choco-mountain","shy-guy-bazaar",4],["choco-mountain","wario-stadium",3],["choco-mountain","cheep-cheep-falls",4],["choco-mountain","moo-moo-meadows",3],["choco-mountain","toads-factory",3],["choco-mountain","bowsers-castle",4],["choco-mountain","peach-stadium",3],["toads-factory","mario-bros-circuit",4,["Hubschrauber (nach Abschnitt 2-2)","Lastwagen (nach Abschnitt 2-2)"]],["toads-factory","wario-stadium",3],["toads-factory","airship-fortress",4],["toads-factory","dandelion-depths",4],["toads-factory","dry-bones-burnout",3],["toads-factory","moo-moo-meadows",3],["toads-factory","choco-mountain",3],["toads-factory","bowsers-castle",3],["toads-factory","acorn-heights",4],["toads-factory","mario-circuit",3],["toads-factory","peach-stadium",4,["Lastwagen (nach Abschnitt 2-3)"]],["bowsers-castle","wario-stadium",3],["bowsers-castle","airship-fortress",3],["bowsers-castle","dry-bones-burnout",3],["bowsers-castle","choco-mountain",4],["bowsers-castle","toads-factory",3],["bowsers-castle","mario-circuit",4],["acorn-heights","dandelion-depths",4],["acorn-heights","boo-cinema",3],["acorn-heights","dry-bones-burnout",3],["acorn-heights","toads-factory",4],["acorn-heights","mario-circuit",5],["mario-circuit","starview-peak",4],["mario-circuit","dandelion-depths",3],["mario-circuit","boo-cinema",3],["mario-circuit","dry-bones-burnout",3],["mario-circuit","moo-moo-meadows",3],["mario-circuit","toads-factory",3],["mario-circuit","bowsers-castle",4],["mario-circuit","acorn-heights",3],["mario-circuit","peach-stadium",5],["peach-stadium","crown-city",3],["peach-stadium","koopa-troopa-beach",4],["peach-stadium","faraway-oasis",3],["peach-stadium","cheep-cheep-falls",3],["peach-stadium","moo-moo-meadows",3],["peach-stadium","choco-mountain",3],["peach-stadium","toads-factory",4,["Lastwagen (nach Abschnitt 2-1)"]],["peach-stadium","rainbow-road",5]];
 
 const T=Object.fromEntries(TRACKS.map(t=>[t.id,t]));
+/* Rundenzahl im VS-Rennen: Standard 3 Runden. Ausnahmen = eine lange Runde, in Abschnitte geteilt.
+   SNES-Strecken: 5 Runden wie im Original (Angabe aus Wiki-Auszug, nicht doppelt bestätigt). */
+const LAPS={"dk-spaceport":[1,6],"mario-circuit":[1,3],"rainbow-road":[1,4]};
+const lapText=id=>LAPS[id]?`1 Runde · ${LAPS[id][1]} Abschnitte`:"3 Runden";
+const SNES_LAPS="5 Runden";
 TRACKS.forEach(t=>{t.cups=CUPS.filter(c=>c.t.includes(t.id));t.order=Math.min(...CUPS.flatMap((c,ci)=>c.t.map((x,i)=>x===t.id?ci*4+i:999)))});
 
 /* ---------- Varianten (alles, was bewertet werden kann) ---------- */
@@ -496,7 +554,7 @@ function markerSVG(t){
   const R=31;
   const face=t.id==="rainbow-road"
     ?`<circle r="${R+6}" fill="none" stroke="url(#rbw)" stroke-width="9"/><circle r="${R-2}" fill="${b.g}" stroke="#fff" stroke-width="4"/>`
-    :`<circle r="${R+4}" fill="#16203a" opacity=".25" transform="translate(0,4)"/><circle r="${R}" fill="${b.g}" stroke="#fff" stroke-width="5"/><circle r="${R-9}" fill="${b.a}" opacity=".9"/>`;
+    :`<circle r="${R+3}" fill="#16203a" transform="translate(0,5)"/><circle r="${R+3}" fill="#16203a"/><circle r="${R}" fill="${b.g}" stroke="#fff" stroke-width="4"/><circle r="${R-9}" fill="${b.a}" opacity=".9"/>`;
   const fs=t.abbr.length>2?15:18;
   return `<g class="mk" data-id="${t.id}" transform="translate(${t.x},${t.y})" tabindex="0" role="button" aria-label="${esc(t.name)} öffnen">
    <circle class="halo" r="${R+15}" fill="#ffc31f" opacity=".0" style="fill-opacity:.45"/>
@@ -505,7 +563,7 @@ function markerSVG(t){
     ${won?`<g transform="translate(${R-6},${-R+4}) scale(.95)"><path transform="translate(-12,-12)" d="${"M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21l1.5-7L2 9.3l7-.8z"}" fill="#ffc31f" stroke="#16203a" stroke-width="2"/></g>`:""}
     ${hasS?`<g transform="translate(${-R+2},${-R+4})"><rect x="-15" y="-9" width="30" height="18" rx="5" fill="#5b5fc7" stroke="#fff" stroke-width="2"/><text y="4.5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-size="10" fill="#fff">SNES</text></g>`:""}
    </g>
-   <text class="lbl" y="${LBL_UP.has(t.id)?-R-14:R+22}" text-anchor="middle" font-size="16">${esc(t.name)}</text>
+   ${(()=>{const w=t.name.length*8.4+22,y=LBL_UP.has(t.id)?-R-34:R+8;return `<g class="plate${t.id==="rainbow-road"?" hov":""}" transform="translate(0,${y})"><rect x="${-w/2}" y="0" width="${w}" height="26" rx="13" fill="#fff" stroke="#16203a" stroke-width="3"/><text class="lbl" x="0" y="18" text-anchor="middle" font-size="14.5">${esc(t.name)}</text></g>`})()}
   </g>`;
 }
 const VB0={x:30,y:20,w:940,h:840};
@@ -640,6 +698,7 @@ function decorate(svgEl,v){ // Richtungspfeile, Start/Ziel, Abschnittsmarken
   }else{
     const s=at(0);out+=`<g transform="translate(${s.x},${s.y}) rotate(${s.a+90})"><g>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${-28+i*7}" y="-7" width="7" height="7" fill="${i%2?"#fff":"#16203a"}"/><rect x="${-28+i*7}" y="0" width="7" height="7" fill="${i%2?"#16203a":"#fff"}"/>`).join("")}</g></g>`;
     for(let i=1;i<9;i++){const q=at(i/9);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a})"><path d="M-8,-10 L6,0 L-8,10" fill="none" stroke="#ffc31f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>`}
+    const lp=v.type==="main"&&LAPS[v.track];if(lp){for(let i=1;i<lp[1];i++){const m=at(i/lp[1]);out+=`<g transform="translate(${m.x},${m.y})"><circle r="17" fill="#ffd400" stroke="#16203a" stroke-width="4"/><text y="6" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-size="17" fill="#16203a">${i}</text></g>`}}
     const q=at(0.04);out+=`<g transform="translate(${q.x},${q.y-46})"><rect x="-44" y="-15" width="88" height="28" rx="14" fill="#16203a"/><text y="5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-size="14" fill="#fff">START</text></g>`;
   }
   g.innerHTML=out;
@@ -655,15 +714,15 @@ function rrow(v,dir){const other=dir==="out"?T[v.to]:T[v.from];
 function renderPanel(id){
   const t=T[id];const b=BIOMES[t.biome];const outs=outOf(id),ins=inTo(id),sn=snesOf(id);
   const el=$("#panel");
-  el.innerHTML=`<div class="p-head" style="background:linear-gradient(135deg,${t.biome==="snow"?"#6b9fd4":b.a},${t.biome==="snow"?"#2b78c9":t.biome==="coast"?"#1d8fb0":b.d})">
+  el.innerHTML=`<div class="p-head" style="background:repeating-linear-gradient(-45deg,rgba(255,255,255,.1) 0 18px,transparent 18px 36px),linear-gradient(135deg,${t.biome==="snow"?"#6b9fd4":b.a},${t.biome==="snow"?"#2b78c9":t.biome==="coast"?"#1d8fb0":b.d})">
      <button class="p-close" aria-label="Schließen" data-close>×</button>
      <span class="chip" style="background:rgba(0,0,0,.2);color:#fff">${esc(b.n)}</span>
      <h2>${esc(t.name)}</h2>
      <div class="meta">${t.cups.map(c=>`<span class="chip">${esc(c.name)}</span>`).join("")}<span class="chip">${outs.length} Abfahrten · ${ins.length} Ankünfte</span></div>
    </div>
    <div class="p-body">
-     <div><p class="sec-t">Hauptstrecke</p>${vcard(VI["main-"+id],"3 Runden · "+t.cups.map(c=>c.name).join(", "))}</div>
-     ${sn.length?`<div><p class="sec-t">SNES-Strecken</p><div class="vlist">${sn.map(s=>vcard(s,"Klassiker aus Update 1.8.0")).join("")}</div></div>`:""}
+     <div><p class="sec-t">Hauptstrecke</p>${vcard(VI["main-"+id],lapText(id)+" · "+t.cups.map(c=>c.name).join(", "))}</div>
+     ${sn.length?`<div><p class="sec-t">SNES-Strecken</p><div class="vlist">${sn.map(s=>vcard(s,SNES_LAPS+" · Klassiker aus Update 1.8.0")).join("")}</div></div>`:""}
      <div><p class="sec-t">Intermissions</p>
        <div class="tabs" role="tablist">
          <button role="tab" aria-selected="${panelTab==="out"}" data-tab="out">Von hier (${outs.length})</button>
@@ -695,12 +754,12 @@ async function renderDetail(id){
   if(v.type==="int"){const rev=VI["r-"+v.to+"--"+v.from];
     sw+=`<button class="sw" data-go="main-${v.to}">Ziel: ${esc(T[v.to].name)}</button>`+(rev?`<button class="sw" data-go="${rev.id}">⇄ Gegenrichtung</button>`:"")}
   const sib=siblings(v);const idx=sib.findIndex(x=>x.id===v.id);
-  const sub=v.type==="main"?`${BIOMES[t.biome].n} · ${t.cups.map(c=>c.name).join(" · ")}`
-    :v.type==="snes"?`Super-Mario-Kart-Klassiker · auswählbar über ${t.name}`
-    :`Verbindungsstrecke · ${v.sections} Abschnitte${v.oneway?" · nur in diese Richtung befahrbar":""}`;
-  const facts=v.type==="main"?[["Region",BIOMES[t.biome].n],["Cups",t.cups.map(c=>c.name).join(", ")],["Abfahrten",outOf(t.id).length+" Intermissions"],["Ankünfte",inTo(t.id).length+" Intermissions"],["SNES",sn.length?sn.map(s=>s.name.replace("SNES ","")).join(", "):"–"]]
-    :v.type==="snes"?[["Herkunft","Super Mario Kart (SNES)"],["Gastgeber",t.name],["Hinzugefügt","Update 1.8.0"],["Items","Item-Felder statt Item-Boxen"]]
-    :[["Start",T[v.from].name],["Ziel",T[v.to].name],["Abschnitte",String(v.sections)],["Richtung",v.oneway?"Einbahn (keine Gegenroute)":"Gegenroute vorhanden"],...(v.gimmicks.length?[["Besonderheiten",v.gimmicks.join(", ")]]:[])];
+  const sub=v.type==="main"?`${lapText(t.id)} · ${BIOMES[t.biome].n} · ${t.cups.map(c=>c.name).join(" · ")}`
+    :v.type==="snes"?`${SNES_LAPS} · Super-Mario-Kart-Klassiker · auswählbar über ${t.name}`
+    :`Verbindungsstrecke · ${v.sections} Abschnitte · dann 1 Runde auf ${T[v.to].name}${v.oneway?" · nur in diese Richtung befahrbar":""}`;
+  const facts=v.type==="main"?[["Runden",LAPS[t.id]?`1 lange Runde, ${LAPS[t.id][1]} Abschnitte`:"3 Runden"],["Region",BIOMES[t.biome].n],["Cups",t.cups.map(c=>c.name).join(", ")],["Abfahrten",outOf(t.id).length+" Intermissions"],["Ankünfte",inTo(t.id).length+" Intermissions"],["SNES",sn.length?sn.map(s=>s.name.replace("SNES ","")).join(", "):"–"]]
+    :v.type==="snes"?[["Runden","5 (wie im SNES-Original; nicht offiziell bestätigt)"],["Herkunft","Super Mario Kart (SNES)"],["Gastgeber",t.name],["Hinzugefügt","Update 1.8.0"],["Items","Item-Felder statt Item-Boxen"]]
+    :[["Ablauf",`Fahrt über die Route, dann 1 Runde auf ${T[v.to].name}`],["Start",T[v.from].name],["Ziel",T[v.to].name],["Abschnitte",String(v.sections)],["Richtung",v.oneway?"Einbahn (keine Gegenroute)":"Gegenroute vorhanden"],...(v.gimmicks.length?[["Besonderheiten",v.gimmicks.join(", ")]]:[])];
   $("#v-detail").innerHTML=`<div class="detail">
     <div class="d-head">
       <button class="back" data-back>${ico("left",18)}Karte</button>
@@ -712,9 +771,10 @@ async function renderDetail(id){
       <div class="stage">
         <div class="canvas" id="canvas">${layoutFor(v,false)}</div>
         <div class="stage-bar">
-          <span class="cap" id="cap">${v.type==="int"?"Route auf der Weltkarte mit Abschnittsmarken. Eigener Screenshot der echten Streckenkarte möglich.":"Schematische Ersatzdarstellung – kein Originallayout. Lade einen eigenen Screenshot der Streckenkarte hoch."}</span>
+          <span class="cap" id="cap">${v.type==="int"?"Route auf der Weltkarte mit Abschnittsmarken (schematisch).":"Schema – nicht das Originallayout."} Echte Streckenkarte: Screenshot hochladen, hier hineinziehen oder mit Strg+V einfügen.</span>
+          <a class="btn" href="${v.type==="int"?"https://www.mariowiki.com/Route":"https://www.mariowiki.com/index.php?search="+encodeURIComponent(v.name+" Mario Kart World")}" target="_blank" rel="noopener">Karte im Wiki ↗</a>
           <button class="btn" id="tglImg" hidden>Schema zeigen</button>
-          <label class="btn primary" for="upl">Bild hochladen</label><input id="upl" type="file" accept="image/*" hidden>
+          <label class="btn primary" for="upl">Streckenkarte hochladen</label><input id="upl" type="file" accept="image/*" hidden>
           <button class="btn" id="delImg" hidden>Bild entfernen</button>
         </div>
       </div>
@@ -764,8 +824,15 @@ $("#v-detail").addEventListener("click",async e=>{
 });
 $("#v-detail").addEventListener("change",async e=>{
   if(e.target.id==="intSel"&&e.target.value){location.hash="v-"+e.target.value;return}
-  if(e.target.id==="upl"&&e.target.files[0]&&curV){const b=await shrink(e.target.files[0]);const ok=await IDB.set("img-"+curV.id,b);if(!ok){$("#cap").textContent="Bild konnte in diesem Browser nicht gespeichert werden.";return}showOwn=true;loadImg(curV.id)}
+  if(e.target.id==="upl"&&e.target.files[0])putImg(e.target.files[0]);
 });
+async function putImg(file){if(!curV||!file||!/^image\//.test(file.type))return;const b=await shrink(file);const ok=await IDB.set("img-"+curV.id,b);
+  if(!ok){$("#cap").textContent="Bild konnte in diesem Browser nicht gespeichert werden.";return}showOwn=true;loadImg(curV.id)}
+document.addEventListener("paste",e=>{if($("#v-detail").hidden||!curV)return;if(e.target.tagName==="TEXTAREA"&&!(e.clipboardData&&[...e.clipboardData.items].some(i=>i.type.startsWith("image/"))))return;
+  const it=e.clipboardData&&[...e.clipboardData.items].find(i=>i.type.startsWith("image/"));if(it){e.preventDefault();putImg(it.getAsFile())}});
+$("#v-detail").addEventListener("dragover",e=>{if(e.target.closest(".stage")){e.preventDefault();e.target.closest(".stage").classList.add("drop")}});
+$("#v-detail").addEventListener("dragleave",e=>{const st=e.target.closest(".stage");if(st)st.classList.remove("drop")});
+$("#v-detail").addEventListener("drop",e=>{const st=e.target.closest(".stage");if(!st)return;e.preventDefault();st.classList.remove("drop");putImg(e.dataTransfer.files[0])});
 function saveNote(val){if(!curV)return;const id=curV.id;$("#saved").textContent="Speichert …";clearTimeout(noteTimer);
   noteTimer=setTimeout(()=>{setV(id,{n:val});const s=$("#saved");if(s&&curV?.id===id)s.textContent="✓ Gespeichert"},500)}
 $("#v-detail").addEventListener("input",e=>{if(e.target.tagName==="TEXTAREA")saveNote(e.target.value)});
@@ -797,7 +864,7 @@ function fillAll(){
   else if(F.sort==="rate")list.sort((a,b)=>(get(b.id).r||0)-(get(a.id).r||0)||a.order-b.order);
   else list.sort((a,b)=>a.order-b.order);
   $("#fcount").textContent=`${list.length} Einträge`;
-  $("#fgrid").innerHTML=list.map(v=>{const t=T[v.track];const sub=v.type==="main"?t.cups.map(c=>c.name).join(" · "):v.type==="snes"?"über "+t.name:`${v.sections} Abschnitte${v.oneway?" · Einbahn":""}`;
+  $("#fgrid").innerHTML=list.map(v=>{const t=T[v.track];const sub=v.type==="main"?lapText(t.id)+" · "+t.cups.map(c=>c.name).join(" · "):v.type==="snes"?SNES_LAPS+" · über "+t.name:`${v.sections} Abschnitte${v.oneway?" · Einbahn":""}`;
     return `<button class="vcard" data-go="${v.id}"><span class="thumb">${v.type==="int"?`<svg viewBox="0 0 64 48"><rect width="64" height="48" fill="#7a3fd1"/><path d="M10 34 Q32 6 54 30" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="10" cy="34" r="5" fill="#1f9d55" stroke="#fff" stroke-width="2"/><circle cx="54" cy="30" r="5" fill="#e3262f" stroke="#fff" stroke-width="2"/></svg>`:layoutFor(v,true)}</span><span class="tx">${typePill(v.type)}<b>${esc(v.name)}</b><small>${esc(sub)}</small></span><span class="st">${statusHTML(v.id)}</span></button>`}).join("")||`<p class="note-empty">Keine Strecke passt zu diesen Filtern.</p>`;
 }
 $("#v-all").addEventListener("click",e=>{const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
