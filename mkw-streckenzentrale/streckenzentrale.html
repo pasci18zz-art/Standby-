@@ -1,0 +1,892 @@
+<title>MKW Streckenzentrale</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,500;0,700;0,800;1,800;1,900&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* Layout: App-Shell (Kopfleiste + eine Ansicht). Karte füllt den Rest des Bildschirms; Detail = große Bühne + Seitenleiste. */
+:root{
+  --sea:#2b78c9; --sea-deep:#1d5ea8; --kart:#e3262f; --kart-dark:#b5161f; --gold:#ffc31f; --gold-deep:#e8a200;
+  --ink:#16203a; --ink-soft:#4a5676; --paper:#eef3fa; --card:#ffffff; --line:#d6dfec; --chip:#e4ebf6;
+  --good:#1f9d55; --int:#7a3fd1; --snes:#5b5fc7; --main:#e3262f;
+  --shadow:0 10px 30px -12px rgba(22,32,58,.35);
+  --f-display:"Rubik",system-ui,"Segoe UI",sans-serif; --f-body:"Nunito Sans",system-ui,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#eef2fb; --ink-soft:#a9b5d1; --paper:#0e1528; --card:#18223d; --line:#2a375a; --chip:#222e4f;
+  --sea:#2a6db8; --sea-deep:#173f78; --shadow:0 12px 34px -14px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ink:#eef2fb; --ink-soft:#a9b5d1; --paper:#0e1528; --card:#18223d; --line:#2a375a; --chip:#222e4f;
+  --sea:#2a6db8; --sea-deep:#173f78; --shadow:0 12px 34px -14px rgba(0,0,0,.7); color-scheme:dark}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;overflow:hidden}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:8px}
+.app{height:100%;display:flex;flex-direction:column}
+
+/* ---------- Kopfleiste ---------- */
+.top{position:relative;z-index:30;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:linear-gradient(100deg,var(--kart) 0%,#f04a2a 100%);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;
+  background:repeating-linear-gradient(90deg,#16203a 0 12px,#fff 12px 24px);opacity:.9}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;margin-right:6px}
+.brand svg{flex:none}
+.brand b{font-family:var(--f-display);font-style:italic;font-weight:900;font-size:20px;letter-spacing:.2px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.brand small{display:block;font-family:var(--f-display);font-weight:700;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;opacity:.85}
+.nav{display:flex;gap:6px}
+.nav a{font-family:var(--f-display);font-weight:800;font-style:italic;font-size:14px;color:#fff;text-decoration:none;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.14);transition:background .15s,transform .15s}
+.nav a:hover{background:rgba(255,255,255,.26);transform:translateY(-1px)}
+.nav a[aria-current="page"]{background:#fff;color:var(--kart)}
+.search{position:relative;flex:1;min-width:180px;max-width:420px;margin-left:auto}
+.search input{width:100%;border:0;border-radius:999px;padding:9px 14px 9px 38px;background:rgba(255,255,255,.95);color:#16203a;font-weight:600}
+.search input::placeholder{color:#6a7592}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#6a7592}
+.sres{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--card);color:var(--ink);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;max-height:60vh;overflow-y:auto;border:1px solid var(--line)}
+.sres button{display:flex;width:100%;align-items:center;gap:10px;padding:10px 14px;border:0;background:none;text-align:left}
+.sres button:hover,.sres button.on{background:var(--chip)}
+.sres .empty{padding:14px;color:var(--ink-soft)}
+.mini-prog{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:800;font-size:13px;color:#fff;text-decoration:none}
+.mini-prog .bar{width:70px;height:8px;border-radius:9px;background:rgba(255,255,255,.3);overflow:hidden}
+.mini-prog .bar i{display:block;height:100%;background:var(--gold);border-radius:9px;transition:width .4s}
+
+main{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;overflow:auto}
+
+/* ---------- Pills & Chips ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-display);font-weight:800;font-size:11px;letter-spacing:.8px;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#fff;white-space:nowrap}
+.pill.main{background:var(--main)} .pill.int{background:var(--int)} .pill.snes{background:var(--snes)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--chip);color:var(--ink-soft);white-space:nowrap}
+.rate-badge{display:inline-grid;place-items:center;min-width:30px;height:24px;padding:0 6px;border-radius:8px;font-family:var(--f-display);font-weight:800;font-size:13px;color:#16203a;background:var(--chip);font-variant-numeric:tabular-nums}
+.rate-badge.set{background:var(--gold)}
+.won-ico{color:var(--line)} .won-ico.on{color:var(--gold-deep)}
+
+/* ---------- Karte ---------- */
+#v-map{overflow:hidden;background:var(--sea-deep)}
+#map{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#map.drag{cursor:grabbing}
+.mk{cursor:pointer}
+.mk .face{transition:transform .18s cubic-bezier(.3,1.6,.5,1)}
+.mk:hover .face,.mk.sel .face,.mk:focus-visible .face{transform:scale(1.18)}
+.mk:focus{outline:none}
+.mk .halo{opacity:0;transition:opacity .2s}
+.mk:hover .halo,.mk.sel .halo,.mk:focus-visible .halo{opacity:1}
+.mk .lbl{font-family:var(--f-display);font-weight:800;font-style:italic;paint-order:stroke;stroke:#16203a;stroke-width:5px;stroke-linejoin:round;fill:#fff;pointer-events:none}
+.mk.dim{opacity:.45}
+.conn path{fill:none;stroke-linecap:round}
+.map-ui{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;z-index:5}
+.map-ui button{width:44px;height:44px;border-radius:14px;border:0;background:var(--card);color:var(--ink);box-shadow:var(--shadow);font-family:var(--f-display);font-weight:800;font-size:20px;display:grid;place-items:center}
+.map-ui button:hover{background:var(--gold);color:#16203a}
+.legend{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:5;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(6px);border-radius:16px;padding:10px 14px;box-shadow:var(--shadow);font-size:12px;display:flex;flex-direction:column;gap:5px;max-width:260px}
+.legend b{font-family:var(--f-display);font-style:italic;font-size:13px}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{display:inline-block;width:22px;height:0;border-top:3px solid}
+.hint{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:5;background:var(--card);color:var(--ink);padding:8px 16px;border-radius:999px;box-shadow:var(--shadow);font-weight:700;font-size:13px;white-space:nowrap;pointer-events:none;transition:opacity .4s}
+
+/* ---------- Streckenauswahl (Panel) ---------- */
+.panel{position:absolute;z-index:20;top:14px;right:14px;bottom:14px;width:min(420px,calc(100% - 28px));background:var(--card);border-radius:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;transform:translateX(calc(100% + 30px));transition:transform .32s cubic-bezier(.2,.9,.25,1.05)}
+.panel.open{transform:none}
+.p-head{position:relative;padding:20px 20px 16px;color:#fff;overflow:hidden}
+.p-head h2{margin:6px 0 4px;font-family:var(--f-display);font-style:italic;font-weight:900;font-size:28px;line-height:1.05;text-wrap:balance;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.p-head .meta{display:flex;flex-wrap:wrap;gap:6px}
+.p-head .meta .chip{background:rgba(255,255,255,.22);color:#fff}
+.p-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:12px;border:0;background:rgba(0,0,0,.2);color:#fff;font-size:20px;display:grid;place-items:center}
+.p-body{flex:1;overflow-y:auto;padding:16px 16px 20px;display:flex;flex-direction:column;gap:18px}
+.sec-t{font-family:var(--f-display);font-weight:800;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-soft);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.vcard{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border-radius:18px;border:2px solid var(--line);background:var(--card);text-align:left;transition:transform .15s,border-color .15s,box-shadow .15s}
+.vcard:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:var(--shadow)}
+.vcard .thumb{width:64px;height:48px;border-radius:12px;flex:none;overflow:hidden;background:var(--chip)}
+.vcard .thumb svg{width:100%;height:100%;display:block}
+.vcard .tx{flex:1;min-width:0}
+.vcard .tx b{display:block;font-family:var(--f-display);font-weight:800;font-size:16px;line-height:1.15}
+.vcard .tx small{color:var(--ink-soft);font-size:12px}
+.vcard .st{display:flex;align-items:center;gap:6px}
+.vlist{display:flex;flex-direction:column;gap:8px}
+.tabs{display:flex;gap:6px;background:var(--chip);padding:4px;border-radius:14px;margin-bottom:10px}
+.tabs button{flex:1;border:0;background:none;padding:7px 8px;border-radius:10px;font-family:var(--f-display);font-weight:800;font-size:13px;color:var(--ink-soft)}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.rrow{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:14px;border:0;background:var(--chip);text-align:left;transition:background .15s,transform .15s}
+.rrow:hover{background:color-mix(in srgb,var(--int) 16%,var(--chip));transform:translateX(3px)}
+.rrow .arrow{color:var(--int);flex:none}
+.rrow .nm{flex:1;min-width:0;font-weight:700}
+.rrow .nm small{display:block;font-weight:600;color:var(--ink-soft);font-size:12px}
+.note-empty{color:var(--ink-soft);font-size:13px;padding:8px 2px}
+
+/* ---------- Detailseite ---------- */
+.detail{min-height:100%;display:flex;flex-direction:column;gap:14px;padding-block:16px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.d-head{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.back{border:0;background:var(--card);border-radius:14px;height:44px;padding:0 14px;display:flex;align-items:center;gap:6px;font-family:var(--f-display);font-weight:800;box-shadow:var(--shadow);flex:none}
+.back:hover{background:var(--gold);color:#16203a}
+.d-title{flex:1;min-width:0}
+.d-title h1{margin:4px 0 2px;font-family:var(--f-display);font-style:italic;font-weight:900;font-size:clamp(26px,3.6vw,42px);line-height:1.05;text-wrap:balance}
+.d-title p{margin:0;color:var(--ink-soft);font-weight:600}
+.d-nav{display:flex;gap:8px}
+.d-nav button{width:44px;height:44px;border-radius:14px;border:0;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
+.d-nav button:hover{background:var(--gold);color:#16203a}
+.switch{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.switch .sw{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-family:var(--f-display);font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;transition:border-color .15s,background .15s}
+.switch .sw:hover{border-color:var(--gold)}
+.switch .sw[aria-current="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.switch select{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-weight:700;font-size:13px;max-width:100%}
+.d-grid{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.stage{position:relative;background:var(--card);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.stage .canvas{aspect-ratio:1000/660;width:100%;max-width:100%;display:grid;place-items:center;background:var(--chip)}
+.stage .canvas svg{width:100%;height:100%;display:block}
+.stage .canvas img{width:100%;height:100%;object-fit:contain;background:#0b1020}
+.stage-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.stage-bar .cap{flex:1;min-width:160px;font-size:12px;color:var(--ink-soft)}
+.btn{border:0;border-radius:12px;padding:8px 14px;font-family:var(--f-display);font-weight:800;font-size:13px;background:var(--chip);display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--gold);color:#16203a}
+.btn.primary{background:var(--kart);color:#fff}
+.btn.primary:hover{background:var(--kart-dark);color:#fff}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.box{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:16px}
+.box h3{margin:0 0 10px;font-family:var(--f-display);font-weight:800;font-size:13px;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.score{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.score .big{font-family:var(--f-display);font-style:italic;font-weight:900;font-size:56px;line-height:.9;font-variant-numeric:tabular-nums;color:var(--ink)}
+.score .big.none{color:var(--line)}
+.score .of{font-family:var(--f-display);font-weight:800;color:var(--ink-soft)}
+.score .word{margin-left:auto;font-family:var(--f-display);font-weight:800;font-style:italic;font-size:16px;color:var(--kart)}
+.rates{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.rates button{height:42px;border-radius:11px;border:0;font-family:var(--f-display);font-weight:800;font-size:15px;background:var(--chip);color:var(--ink-soft);transition:transform .12s,background .12s;font-variant-numeric:tabular-nums}
+.rates button:hover{transform:translateY(-3px)}
+.rates button.fill{color:#16203a}
+.linkbtn{border:0;background:none;color:var(--ink-soft);font-size:12px;font-weight:700;text-decoration:underline;padding:0}
+.win{display:flex;align-items:center;gap:14px;width:100%;border:0;border-radius:18px;padding:14px;background:var(--chip);text-align:left;transition:background .2s}
+.win .tro{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:var(--card);color:var(--line);flex:none;transition:transform .3s cubic-bezier(.3,1.8,.5,1),color .2s,background .2s}
+.win b{display:block;font-family:var(--f-display);font-weight:900;font-style:italic;font-size:19px}
+.win small{color:var(--ink-soft);font-weight:600}
+.win .tog{margin-left:auto;width:52px;height:30px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.win .tog::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.win[aria-checked="true"]{background:color-mix(in srgb,var(--gold) 30%,var(--chip))}
+.win[aria-checked="true"] .tro{color:#16203a;background:var(--gold);transform:rotate(-8deg) scale(1.05)}
+.win[aria-checked="true"] .tog{background:var(--good)}
+.win[aria-checked="true"] .tog::after{transform:translateX(22px)}
+.notes textarea{width:100%;min-height:230px;resize:vertical;border:2px solid var(--line);border-radius:16px;padding:12px;background:var(--paper);line-height:1.5}
+.notes textarea:focus{border-color:var(--gold);outline:none}
+.tpl{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.tpl button{border:0;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;background:var(--chip);color:var(--ink-soft)}
+.tpl button:hover{background:var(--gold);color:#16203a}
+.saved{font-size:12px;font-weight:700;color:var(--good);text-transform:none;letter-spacing:0;transition:opacity .3s}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px}
+.facts dt{color:var(--ink-soft);font-weight:700}
+.facts dd{margin:0;font-weight:600;min-width:0}
+
+/* ---------- Übersicht ---------- */
+.page{max-width:1240px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.page h1{margin:0;font-family:var(--f-display);font-style:italic;font-weight:900;font-size:clamp(28px,4vw,40px);line-height:1.05}
+.page .lead{margin:4px 0 0;color:var(--ink-soft);font-weight:600}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);padding:10px;border-radius:18px;box-shadow:var(--shadow)}
+.seg{display:flex;gap:4px;background:var(--chip);padding:4px;border-radius:12px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:6px 11px;border-radius:9px;font-family:var(--f-display);font-weight:800;font-size:13px;color:var(--ink-soft)}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 2px 5px rgba(0,0,0,.1)}
+.filters input,.filters select{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:7px 12px;font-weight:600}
+.filters input{flex:1;min-width:160px}
+.count{font-size:13px;color:var(--ink-soft);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.cupgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.cup{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:14px}
+.cup h3{margin:0 0 10px;font-family:var(--f-display);font-style:italic;font-weight:900;font-size:18px;display:flex;align-items:center;gap:8px}
+.cup h3 small{margin-left:auto;font-style:normal;font-size:12px;color:var(--ink-soft)}
+.cup ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.cup li button{width:100%;display:flex;align-items:center;gap:8px;border:0;background:var(--chip);border-radius:12px;padding:7px 10px;text-align:left;font-weight:700}
+.cup li button:hover{background:color-mix(in srgb,var(--gold) 35%,var(--chip))}
+.cup li .n{flex:1;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.stat{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:8px}
+.stat .k{font-family:var(--f-display);font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink-soft)}
+.stat .v{font-family:var(--f-display);font-style:italic;font-weight:900;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:18px;color:var(--ink-soft);font-style:normal}
+.pbar{height:12px;border-radius:99px;background:var(--chip);overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:99px;transition:width .5s}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hist{display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:10px}
+.hist div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;font-size:11px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.hist i{display:block;width:100%;border-radius:7px 7px 3px 3px;background:var(--gold);min-height:3px;transition:height .4s}
+.toplist{display:flex;flex-direction:column;gap:6px}
+.backup textarea{width:100%;min-height:120px;border:2px solid var(--line);border-radius:12px;background:var(--paper);padding:10px;font-family:ui-monospace,monospace;font-size:12px}
+.msg{font-size:13px;font-weight:700}
+.sync{font-size:12px;color:var(--ink-soft);font-weight:600}
+
+@media (max-width:980px){
+  .d-grid{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .brand small{display:none}
+  .nav{order:3;width:100%;overflow-x:auto}
+  .search{order:2;max-width:none}
+  .mini-prog{display:none}
+  .panel{top:auto;left:0;right:0;bottom:0;width:100%;height:72%;border-radius:24px 24px 0 0;transform:translateY(105%)}
+  .panel.open{transform:none}
+  .p-body{padding-bottom:max(20px,env(safe-area-inset-bottom,0px))}
+  .legend{display:none}
+  .rates{grid-template-columns:repeat(5,1fr)}
+  .hint{font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <a class="brand" href="#karte" aria-label="Zur Weltkarte">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#fff"/><circle cx="20" cy="20" r="15" fill="#ffc31f"/><g fill="#16203a"><rect x="12" y="12" width="4" height="4"/><rect x="20" y="12" width="4" height="4"/><rect x="16" y="16" width="4" height="4"/><rect x="24" y="16" width="4" height="4"/><rect x="12" y="20" width="4" height="4"/><rect x="20" y="20" width="4" height="4"/><rect x="16" y="24" width="4" height="4"/><rect x="24" y="24" width="4" height="4"/></g></svg>
+      <span><b>Streckenzentrale</b><small>Mario Kart World · Fan-Datenbank</small></span>
+    </a>
+    <nav class="nav" aria-label="Hauptnavigation">
+      <a href="#karte" data-nav="karte">Weltkarte</a>
+      <a href="#alle" data-nav="alle">Alle Strecken</a>
+      <a href="#fortschritt" data-nav="fortschritt">Fortschritt</a>
+    </nav>
+    <div class="search" role="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input id="q" type="search" placeholder="Strecke, SNES oder Route suchen …" autocomplete="off" aria-label="Strecken suchen">
+      <div class="sres" id="sres" hidden></div>
+    </div>
+    <a class="mini-prog" href="#fortschritt" title="Siege gesamt"><span id="mp-t">0/242</span><span class="bar"><i id="mp-b" style="width:0"></i></span></a>
+  </header>
+  <main>
+    <section class="view" id="v-map" aria-label="Weltkarte">
+      <svg id="map" role="img" aria-label="Weltkarte mit allen Strecken"></svg>
+      <div class="hint" id="hint">Strecke antippen · ziehen &amp; zoomen</div>
+      <div class="legend" aria-hidden="true">
+        <b>Legende</b>
+        <span><svg width="16" height="16" viewBox="0 0 24 24"><path fill="#ffc31f" stroke="#16203a" stroke-width="2" d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21l1.5-7L2 9.3l7-.8z"/></svg>Hauptstrecke gewonnen</span>
+        <span><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="3" fill="#5b5fc7"/></svg>Mit SNES-Strecke</span>
+        <span><i style="border-color:#e3262f"></i>Intermission von hier</span>
+        <span><i style="border-color:#3b82f6;border-top-style:dashed"></i>Intermission hierher</span>
+      </div>
+      <div class="map-ui">
+        <button id="zin" aria-label="Hineinzoomen">+</button>
+        <button id="zout" aria-label="Herauszoomen">−</button>
+        <button id="zreset" aria-label="Ganze Karte zeigen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+      <aside class="panel" id="panel" aria-label="Streckenauswahl"></aside>
+    </section>
+    <section class="view" id="v-detail" hidden></section>
+    <section class="view" id="v-all" hidden></section>
+    <section class="view" id="v-prog" hidden></section>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   DATEN
+   Positionen: Mittelpunkt jeder Strecke auf der Weltkarte in % (x/y),
+   SNES-Zuordnung: Update 1.8.0 (Sept. 2026), Auswahl über die Gastgeberstrecke.
+   Intermissions: alle 202 Routen (Start → Ziel, Anzahl Abschnitte).
+   ===================================================================== */
+const CUPS=[
+ {id:"pilz",name:"Pilz-Cup",c:"#e3262f",t:["mario-bros-circuit","crown-city","whistlestop-summit","dk-spaceport"]},
+ {id:"blume",name:"Blumen-Cup",c:"#f08a1c",t:["desert-hills","shy-guy-bazaar","wario-stadium","airship-fortress"]},
+ {id:"stern",name:"Stern-Cup",c:"#e8b400",t:["dk-pass","starview-peak","sky-high-sundae","wario-shipyard"]},
+ {id:"panzer",name:"Panzer-Cup",c:"#1f9d55",t:["koopa-troopa-beach","faraway-oasis","crown-city","peach-stadium"]},
+ {id:"banane",name:"Bananen-Cup",c:"#d9b300",t:["peach-beach","salty-salty-speedway","dino-dino-jungle","great-q-block-ruins"]},
+ {id:"blatt",name:"Blatt-Cup",c:"#3c9a3c",t:["cheep-cheep-falls","dandelion-depths","boo-cinema","dry-bones-burnout"]},
+ {id:"blitz",name:"Blitz-Cup",c:"#7a3fd1",t:["moo-moo-meadows","choco-mountain","toads-factory","bowsers-castle"]},
+ {id:"spezial",name:"Spezial-Cup",c:"#2b78c9",t:["acorn-heights","mario-circuit","peach-stadium","rainbow-road"]}
+];
+const BIOMES={
+ volcano:{n:"Vulkanland",g:"#4a3f45",a:"#ff7a2a",d:"#2e272b"},
+ forest:{n:"Nordwald",g:"#3f9a45",a:"#2c7a33",d:"#256b2b"},
+ snow:{n:"Schneegebirge",g:"#eaf2fa",a:"#9fc3e6",d:"#c9dcef"},
+ desert:{n:"Sonnenwüste",g:"#f3b866",a:"#e4943e",d:"#d99a4a"},
+ canyon:{n:"Roter Canyon",g:"#d96a3c",a:"#b8502a",d:"#b85631"},
+ plains:{n:"Zentrale Ebene",g:"#9ccc45",a:"#6fae2d",d:"#82b53a"},
+ autumn:{n:"Herbstwald",g:"#e8823a",a:"#c9572a",d:"#cf6c2e"},
+ savanna:{n:"Savanne",g:"#e6cf62",a:"#bfa23a",d:"#cdb24a"},
+ jungle:{n:"Südlicher Dschungel",g:"#2f8a45",a:"#1f6b33",d:"#236c36"},
+ coast:{n:"Küste & Inseln",g:"#f4e3a6",a:"#2fb3c9",d:"#e6cf86"},
+ sky:{n:"Am Himmel",g:"#1b1f4a",a:"#ff5fd2",d:"#14173a"}
+};
+// id, Name, Kürzel, Biom, x%, y%, Alias für die Suche
+const TRACKS=[
+ ["mario-bros-circuit","Mario Bros. Circuit","MBC","canyon",23.19,59.43],
+ ["crown-city","Crown City","CC","plains",37.88,70.29,"Trophy City"],
+ ["whistlestop-summit","Whistlestop Summit","WS","canyon",23.86,79.52],
+ ["dk-spaceport","DK Spaceport","DKS","plains",39.34,83.8],
+ ["desert-hills","Desert Hills","DH","desert",12.3,69.56],
+ ["shy-guy-bazaar","Shy Guy Bazaar","SGB","desert",13.09,50.06],
+ ["wario-stadium","Wario Stadium","WSt","canyon",26.25,43.05],
+ ["airship-fortress","Airship Fortress","AF","desert",14.88,32.15],
+ ["dk-pass","DK Pass","DKP","snow",73.11,43.18,"DK Snow Mountain"],
+ ["starview-peak","Starview Peak","SP","snow",73.6,23.9],
+ ["sky-high-sundae","Sky-High Sundae","SHS","snow",84.78,34.8],
+ ["wario-shipyard","Wario Shipyard","WSY","coast",85.79,54.04,"Wario's Galleon"],
+ ["koopa-troopa-beach","Koopa Troopa Beach","KTB","coast",49.89,79.56,"Koopa Beach"],
+ ["faraway-oasis","Faraway Oasis","FO","savanna",60.81,68.62],
+ ["peach-beach","Peach Beach","PB","coast",85.04,68.75],
+ ["salty-salty-speedway","Salty Salty Speedway","SSS","coast",74.2,60.62],
+ ["dino-dino-jungle","Dino Dino Jungle","DDJ","jungle",64.66,86.15],
+ ["great-q-block-ruins","Great ? Block Ruins","G?B","jungle",76.93,80.5,"Great Question Block Ruins"],
+ ["cheep-cheep-falls","Cheep Cheep Falls","CCF","autumn",62.79,51.86],
+ ["dandelion-depths","Dandelion Depths","DD","autumn",61.97,36.81],
+ ["boo-cinema","Boo Cinema","BC","forest",63.43,17.44],
+ ["dry-bones-burnout","Dry Bones Burnout","DBB","volcano",38.15,18.08],
+ ["moo-moo-meadows","Moo Moo Meadows","MMM","plains",49.96,41.98],
+ ["choco-mountain","Choco Mountain","CM","plains",37.81,51.47],
+ ["toads-factory","Toad's Factory","TF","plains",39.01,35.06],
+ ["bowsers-castle","Bowser's Castle","BCa","volcano",26.96,18.64],
+ ["acorn-heights","Acorn Heights","AH","forest",49.74,11.33],
+ ["mario-circuit","Mario Circuit","MC","forest",50.45,27.58],
+ ["peach-stadium","Peach Stadium","PS","plains",50.04,57.37],
+ ["rainbow-road","Rainbow Road","RR","sky",49.9,71.5]
+].map(a=>({id:a[0],name:a[1],abbr:a[2],biome:a[3],x:a[4]*10,y:a[5]*8.75,alias:a[6]||""}));
+const SNES=[
+ ["snes-mario-circuit-1","SNES Mario Circuit 1","mario-circuit","mc"],
+ ["snes-mario-circuit-2","SNES Mario Circuit 2","mario-circuit","mc"],
+ ["snes-mario-circuit-3","SNES Mario Circuit 3","mario-circuit","mc"],
+ ["snes-ghost-valley-1","SNES Ghost Valley 1","boo-cinema","gv"],
+ ["snes-ghost-valley-2","SNES Ghost Valley 2","boo-cinema","gv"],
+ ["snes-ghost-valley-3","SNES Ghost Valley 3","boo-cinema","gv"],
+ ["snes-choco-island-1","SNES Choco Island 1","choco-mountain","ci"],
+ ["snes-choco-island-2","SNES Choco Island 2","choco-mountain","ci"],
+ ["snes-vanilla-lake-1","SNES Vanilla Lake 1","sky-high-sundae","vl"],
+ ["snes-koopa-beach-1","SNES Koopa Beach 1","koopa-troopa-beach","kb"]
+].map(a=>({id:a[0],name:a[1],host:a[2],theme:a[3]}));
+const ROUTES=[["mario-bros-circuit","crown-city",3],["mario-bros-circuit","whistlestop-summit",3],["mario-bros-circuit","desert-hills",3],["mario-bros-circuit","shy-guy-bazaar",3],["mario-bros-circuit","wario-stadium",3],["mario-bros-circuit","choco-mountain",3],["mario-bros-circuit","toads-factory",4,["Hubschrauber (nach Abschnitt 2-2)","Lastwagen (nach Abschnitt 2-2)"]],["crown-city","mario-bros-circuit",3],["crown-city","whistlestop-summit",3],["crown-city","dk-spaceport",8],["crown-city","desert-hills",4],["crown-city","wario-stadium",4],["crown-city","koopa-troopa-beach",4],["crown-city","faraway-oasis",4],["crown-city","moo-moo-meadows",4],["crown-city","choco-mountain",3],["crown-city","peach-stadium",3],["whistlestop-summit","mario-bros-circuit",3],["whistlestop-summit","crown-city",3],["whistlestop-summit","dk-spaceport",8],["whistlestop-summit","desert-hills",3],["whistlestop-summit","koopa-troopa-beach",5,["Motorboot (nach Abschnitt 3-2)"]],["whistlestop-summit","choco-mountain",4,["Tornado (nach Abschnitt 2-2)"]],["dk-spaceport","mario-bros-circuit",4],["dk-spaceport","crown-city",3],["dk-spaceport","whistlestop-summit",3],["dk-spaceport","desert-hills",4],["dk-spaceport","koopa-troopa-beach",4],["dk-spaceport","peach-stadium",5,["Motorboot (nach Abschnitt 3-1)","Hubschrauber (nach Abschnitt 3-2)"]],["desert-hills","mario-bros-circuit",3],["desert-hills","crown-city",4],["desert-hills","whistlestop-summit",3],["desert-hills","shy-guy-bazaar",3],["desert-hills","koopa-troopa-beach",6,["Hubschrauber (nach Abschnitt 4-1)"]],["shy-guy-bazaar","mario-bros-circuit",3],["shy-guy-bazaar","desert-hills",3],["shy-guy-bazaar","wario-stadium",3],["shy-guy-bazaar","airship-fortress",3],["shy-guy-bazaar","choco-mountain",4],["wario-stadium","mario-bros-circuit",3],["wario-stadium","crown-city",4],["wario-stadium","shy-guy-bazaar",3],["wario-stadium","airship-fortress",3],["wario-stadium","dry-bones-burnout",4],["wario-stadium","choco-mountain",3],["wario-stadium","toads-factory",3],["wario-stadium","bowsers-castle",3],["airship-fortress","shy-guy-bazaar",3],["airship-fortress","wario-stadium",3],["airship-fortress","dry-bones-burnout",4],["airship-fortress","toads-factory",4],["airship-fortress","bowsers-castle",3],["dk-pass","starview-peak",3],["dk-pass","sky-high-sundae",3],["dk-pass","wario-shipyard",3],["dk-pass","salty-salty-speedway",3],["dk-pass","cheep-cheep-falls",3],["dk-pass","dandelion-depths",3],["dk-pass","moo-moo-meadows",4],["starview-peak","dk-pass",3],["starview-peak","sky-high-sundae",3],["starview-peak","wario-shipyard",4],["starview-peak","cheep-cheep-falls",4],["starview-peak","dandelion-depths",3],["starview-peak","boo-cinema",4],["starview-peak","mario-circuit",4],["sky-high-sundae","dk-pass",3],["sky-high-sundae","starview-peak",3],["sky-high-sundae","wario-shipyard",3],["sky-high-sundae","salty-salty-speedway",4],["sky-high-sundae","cheep-cheep-falls",4],["sky-high-sundae","dandelion-depths",4],["wario-shipyard","dk-pass",3],["wario-shipyard","starview-peak",4],["wario-shipyard","sky-high-sundae",3],["wario-shipyard","peach-beach",4,["Motorboot (nach Abschnitt 1-2)"]],["wario-shipyard","salty-salty-speedway",3],["wario-shipyard","cheep-cheep-falls",4],["koopa-troopa-beach","crown-city",3],["koopa-troopa-beach","dk-spaceport",8],["koopa-troopa-beach","faraway-oasis",3],["koopa-troopa-beach","dino-dino-jungle",3],["koopa-troopa-beach","peach-stadium",3],["faraway-oasis","crown-city",4],["faraway-oasis","koopa-troopa-beach",4],["faraway-oasis","peach-beach",4],["faraway-oasis","salty-salty-speedway",3],["faraway-oasis","dino-dino-jungle",3],["faraway-oasis","great-q-block-ruins",3],["faraway-oasis","cheep-cheep-falls",3],["faraway-oasis","peach-stadium",3],["peach-beach","wario-shipyard",3,["Motorboot (nach Abschnitt 2-1)"]],["peach-beach","faraway-oasis",3],["peach-beach","salty-salty-speedway",3],["peach-beach","dino-dino-jungle",4],["peach-beach","great-q-block-ruins",3],["salty-salty-speedway","dk-pass",3],["salty-salty-speedway","wario-shipyard",3],["salty-salty-speedway","faraway-oasis",3],["salty-salty-speedway","peach-beach",4],["salty-salty-speedway","dino-dino-jungle",4],["salty-salty-speedway","great-q-block-ruins",3],["salty-salty-speedway","cheep-cheep-falls",3],["dino-dino-jungle","koopa-troopa-beach",4],["dino-dino-jungle","faraway-oasis",3],["dino-dino-jungle","peach-beach",5],["dino-dino-jungle","salty-salty-speedway",4],["dino-dino-jungle","great-q-block-ruins",3],["great-q-block-ruins","koopa-troopa-beach",5],["great-q-block-ruins","faraway-oasis",3],["great-q-block-ruins","peach-beach",4],["great-q-block-ruins","salty-salty-speedway",3],["great-q-block-ruins","dino-dino-jungle",3],["cheep-cheep-falls","dk-pass",3],["cheep-cheep-falls","starview-peak",4],["cheep-cheep-falls","wario-shipyard",4],["cheep-cheep-falls","faraway-oasis",3],["cheep-cheep-falls","salty-salty-speedway",3],["cheep-cheep-falls","dandelion-depths",3],["cheep-cheep-falls","moo-moo-meadows",3],["cheep-cheep-falls","choco-mountain",4],["cheep-cheep-falls","peach-stadium",3],["dandelion-depths","dk-pass",3],["dandelion-depths","starview-peak",3],["dandelion-depths","sky-high-sundae",4],["dandelion-depths","cheep-cheep-falls",3],["dandelion-depths","boo-cinema",3],["dandelion-depths","moo-moo-meadows",3],["dandelion-depths","toads-factory",4],["dandelion-depths","acorn-heights",4],["dandelion-depths","mario-circuit",3],["boo-cinema","starview-peak",4],["boo-cinema","dandelion-depths",3],["boo-cinema","dry-bones-burnout",4],["boo-cinema","acorn-heights",3],["boo-cinema","mario-circuit",3],["dry-bones-burnout","wario-stadium",4],["dry-bones-burnout","airship-fortress",4],["dry-bones-burnout","boo-cinema",4],["dry-bones-burnout","moo-moo-meadows",4],["dry-bones-burnout","toads-factory",3],["dry-bones-burnout","bowsers-castle",3],["dry-bones-burnout","acorn-heights",3],["dry-bones-burnout","mario-circuit",3],["moo-moo-meadows","crown-city",4],["moo-moo-meadows","dk-pass",4],["moo-moo-meadows","cheep-cheep-falls",3],["moo-moo-meadows","dandelion-depths",3],["moo-moo-meadows","dry-bones-burnout",4],["moo-moo-meadows","choco-mountain",3],["moo-moo-meadows","toads-factory",3],["moo-moo-meadows","mario-circuit",3],["moo-moo-meadows","peach-stadium",3],["choco-mountain","mario-bros-circuit",3],["choco-mountain","crown-city",3],["choco-mountain","whistlestop-summit",4,["Tornado (nach Abschnitt 2-1)"]],["choco-mountain","shy-guy-bazaar",4],["choco-mountain","wario-stadium",3],["choco-mountain","cheep-cheep-falls",4],["choco-mountain","moo-moo-meadows",3],["choco-mountain","toads-factory",3],["choco-mountain","bowsers-castle",4],["choco-mountain","peach-stadium",3],["toads-factory","mario-bros-circuit",4,["Hubschrauber (nach Abschnitt 2-2)","Lastwagen (nach Abschnitt 2-2)"]],["toads-factory","wario-stadium",3],["toads-factory","airship-fortress",4],["toads-factory","dandelion-depths",4],["toads-factory","dry-bones-burnout",3],["toads-factory","moo-moo-meadows",3],["toads-factory","choco-mountain",3],["toads-factory","bowsers-castle",3],["toads-factory","acorn-heights",4],["toads-factory","mario-circuit",3],["toads-factory","peach-stadium",4,["Lastwagen (nach Abschnitt 2-3)"]],["bowsers-castle","wario-stadium",3],["bowsers-castle","airship-fortress",3],["bowsers-castle","dry-bones-burnout",3],["bowsers-castle","choco-mountain",4],["bowsers-castle","toads-factory",3],["bowsers-castle","mario-circuit",4],["acorn-heights","dandelion-depths",4],["acorn-heights","boo-cinema",3],["acorn-heights","dry-bones-burnout",3],["acorn-heights","toads-factory",4],["acorn-heights","mario-circuit",5],["mario-circuit","starview-peak",4],["mario-circuit","dandelion-depths",3],["mario-circuit","boo-cinema",3],["mario-circuit","dry-bones-burnout",3],["mario-circuit","moo-moo-meadows",3],["mario-circuit","toads-factory",3],["mario-circuit","bowsers-castle",4],["mario-circuit","acorn-heights",3],["mario-circuit","peach-stadium",5],["peach-stadium","crown-city",3],["peach-stadium","koopa-troopa-beach",4],["peach-stadium","faraway-oasis",3],["peach-stadium","cheep-cheep-falls",3],["peach-stadium","moo-moo-meadows",3],["peach-stadium","choco-mountain",3],["peach-stadium","toads-factory",4,["Lastwagen (nach Abschnitt 2-1)"]],["peach-stadium","rainbow-road",5]];
+
+const T=Object.fromEntries(TRACKS.map(t=>[t.id,t]));
+TRACKS.forEach(t=>{t.cups=CUPS.filter(c=>c.t.includes(t.id));t.order=Math.min(...CUPS.flatMap((c,ci)=>c.t.map((x,i)=>x===t.id?ci*4+i:999)))});
+
+/* ---------- Varianten (alles, was bewertet werden kann) ---------- */
+const V=[];const VI={};
+function addV(v){V.push(v);VI[v.id]=v}
+TRACKS.forEach(t=>addV({id:"main-"+t.id,type:"main",track:t.id,name:t.name,order:t.order}));
+SNES.forEach((s,i)=>addV({id:s.id,type:"snes",track:s.host,name:s.name,theme:s.theme,order:100+i}));
+const RSET=new Set(ROUTES.map(r=>r[0]+">"+r[1]));
+ROUTES.forEach((r,i)=>addV({id:"r-"+r[0]+"--"+r[1],type:"int",from:r[0],to:r[1],track:r[0],sections:r[2],gimmicks:r[3]||[],
+  oneway:!RSET.has(r[1]+">"+r[0]),name:T[r[0]].name+" → "+T[r[1]].name,order:200+T[r[0]].order*40+T[r[1]].order}));
+const TYPE_N={main:"Hauptstrecke",int:"Intermission",snes:"SNES-Strecke"};
+const outOf=id=>V.filter(v=>v.type==="int"&&v.from===id).sort((a,b)=>T[a.to].order-T[b.to].order);
+const inTo=id=>V.filter(v=>v.type==="int"&&v.to===id).sort((a,b)=>T[a.from].order-T[b.from].order);
+const snesOf=id=>V.filter(v=>v.type==="snes"&&v.track===id);
+
+/* =====================================================================
+   SPEICHER: lokal (localStorage) + wenn verfügbar Cloud (claude db, privat)
+   ===================================================================== */
+const LS="mkw-zentrale-v1";
+let S={};
+try{S=JSON.parse(localStorage.getItem(LS))||{}}catch(e){S={}}
+const get=id=>S[id]||{};
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+let cloud=null;const qd={},busy={},tmr={};
+function setV(id,patch){
+  const cur={...get(id),...patch,t:Date.now()};
+  if(cur.r==null)delete cur.r;
+  S[id]=cur;saveLocal();queue(id);refreshBadges();
+}
+function queue(id){if(!cloud)return;qd[id]=1;clearTimeout(tmr[id]);tmr[id]=setTimeout(()=>flush(id),450)}
+async function flush(id){
+  if(busy[id]||!qd[id])return;qd[id]=0;busy[id]=1;
+  try{const d={...S[id]};delete d.img;await cloud.doc(id).set(d);setSync("Synchronisiert mit deinem Claude-Konto")}
+  catch(e){setSync("Cloud-Speichern fehlgeschlagen – lokal gespeichert");}
+  busy[id]=0;if(qd[id])flush(id);
+}
+let syncText="Auf diesem Gerät gespeichert";
+function setSync(t){syncText=t;document.querySelectorAll(".sync").forEach(e=>e.textContent=t)}
+async function initCloud(){
+  if(!window.claude||!window.claude.use)return;
+  try{
+    const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+    if(!db||!user)return;
+    const uid=await user.id();if(!uid)return;
+    const col=db.collection("data/users/"+uid);
+    const snap=await Promise.race([col.get(),new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000))]);
+    const remote={};snap.docs.forEach(d=>{remote[d.id]=d.data()||{}});
+    for(const [id,d] of Object.entries(remote)){if(VI[id]&&(!S[id]||(d.t||0)>(S[id].t||0)))S[id]=d}
+    saveLocal();cloud=col;
+    for(const id of Object.keys(S)){if(VI[id]&&(!remote[id]||(S[id].t||0)>(remote[id].t||0)))queue(id)}
+    setSync("Synchronisiert mit deinem Claude-Konto");route();
+  }catch(e){setSync("Auf diesem Gerät gespeichert")}
+}
+
+/* Eigene Streckenbilder: IndexedDB (nur dieses Gerät) */
+const IDB={db:null,
+  open(){return new Promise(res=>{try{const r=indexedDB.open("mkw-zentrale-img",1);r.onupgradeneeded=()=>r.result.createObjectStore("img");r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>res(null)}catch(e){res(null)}})},
+  async get(k){const db=this.db||await this.open();if(!db)return null;return new Promise(res=>{try{const q=db.transaction("img").objectStore("img").get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)}catch(e){res(null)}})},
+  async set(k,v){const db=this.db||await this.open();if(!db)return false;return new Promise(res=>{try{const tx=db.transaction("img","readwrite");v==null?tx.objectStore("img").delete(k):tx.objectStore("img").put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false)}catch(e){res(false)}})}
+};
+
+/* =====================================================================
+   HILFSFUNKTIONEN
+   ===================================================================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let h=hash(seed)||1;return()=>{h^=h<<13;h>>>=0;h^=h>>17;h^=h<<5;h>>>=0;return h/4294967296}}
+function smooth(pts,closed=true){ // Catmull-Rom → Bézier
+  const n=pts.length;let d=`M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  const P=i=>closed?pts[(i+n)%n]:pts[Math.max(0,Math.min(n-1,i))];
+  for(let i=0;i<(closed?n:n-1);i++){const p0=P(i-1),p1=P(i),p2=P(i+1),p3=P(i+2);
+    d+=`C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)},${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)},${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`}
+  return d+(closed?"Z":"");
+}
+const RATE_WORDS=["","Katastrophe","Schwach","Mäh","Geht so","Okay","Ganz gut","Gut","Sehr gut","Großartig","Meisterwerk"];
+const rateColor=r=>`hsl(${Math.round((r-1)/9*110)},85%,${r>5?45:52}%)`;
+const ICON={
+ star:'<path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21l1.5-7L2 9.3l7-.8z"/>',
+ trophy:'<path d="M7 3h10v3h3v2a5 5 0 0 1-4.6 5A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 8.6 13 5 5 0 0 1 4 8V6h3zm0 5V8H6a3 3 0 0 0 1 2.2zm10 0v2.2A3 3 0 0 0 18 8z"/>',
+ arrow:'<path d="M4 12h14m-5-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
+ left:'<path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>',
+ right:'<path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+const ico=(n,s=18,fill="currentColor")=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill}" aria-hidden="true">${ICON[n]}</svg>`;
+function statusHTML(id){const d=get(id);return `<span class="rate-badge ${d.r?"set":""}" title="Bewertung">${d.r||"–"}</span><span class="won-ico ${d.w?"on":""}" title="${d.w?"Gewonnen":"Noch nicht gewonnen"}">${ico("trophy",20)}</span>`}
+function typePill(t){return `<span class="pill ${t}">${TYPE_N[t]}</span>`}
+
+/* =====================================================================
+   WELTKARTE (eigene, stilisierte Zeichnung – Positionen geografisch korrekt)
+   ===================================================================== */
+const MAIN_ISLAND=[[150,262],[178,178],[250,118],[345,92],[425,66],[515,52],[600,74],[662,122],[720,160],[815,172],[880,212],[902,300],[884,392],[824,424],[812,446],[880,452],[910,512],[896,580],[872,640],[826,668],[818,742],[748,794],[650,808],[596,760],[566,700],[540,640],[488,606],[430,606],[400,650],[372,700],[350,768],[256,778],[150,748],[88,660],[72,540],[84,410],[112,320]];
+const ISLETS=[[[470,668],[525,660],[548,700],[520,735],[470,730],[452,700]],[[868,592],[905,596],[915,628],[888,648],[858,632]],[[350,790],[420,782],[440,812],[388,830],[352,818]]];
+const RIVERS=["M430,70 C440,150 470,190 450,250 S400,330 380,370 S330,420 300,470","M600,74 C590,150 560,200 585,260 S640,330 620,400 S600,480 640,540 S700,600 690,640","M88,410 C150,400 200,420 260,395","M300,470 C260,520 280,560 250,610 S220,680 256,740","M690,640 C720,680 760,700 790,720"];
+let mapArtCache="";
+function worldArt(){
+  if(mapArtCache)return mapArtCache;
+  const r=rng("welt");let deco="";
+  const near=(x,y)=>TRACKS.reduce((b,t)=>{const d=(t.x-x)**2+(t.y-y)**2;return d<b.d?{d,t}:b},{d:1e9}).t;
+  for(let i=0;i<520;i++){const x=70+r()*840,y=55+r()*760;const t=near(x,y);if(t.biome==="sky")continue;
+    const b=t.biome;const s=4+r()*5;
+    if(b==="forest"||b==="jungle")deco+=`<circle cx="${x|0}" cy="${y|0}" r="${s|0}" fill="${BIOMES[b].a}" opacity=".85"/>`;
+    else if(b==="snow")deco+=`<path d="M${x|0},${(y-s)|0}l${s|0},${(s*1.6)|0}h-${(s*2)|0}z" fill="#b9d2ea"/>`;
+    else if(b==="volcano")deco+=`<path d="M${x|0},${(y-s)|0}l${(s*.8)|0},${(s*1.5)|0}h-${(s*1.6)|0}z" fill="#2a2226"/>`;
+    else if(b==="desert"||b==="canyon"||b==="savanna")deco+=`<ellipse cx="${x|0}" cy="${y|0}" rx="${(s*1.2)|0}" ry="${(s*.6)|0}" fill="${BIOMES[b].a}" opacity=".55"/>`;
+    else if(b==="autumn")deco+=`<circle cx="${x|0}" cy="${y|0}" r="${(s*.9)|0}" fill="#c9452a" opacity=".8"/>`;
+    else deco+=`<circle cx="${x|0}" cy="${y|0}" r="${(s*.5)|0}" fill="${BIOMES[b].a}" opacity=".45"/>`;
+  }
+  const blobs=TRACKS.filter(t=>t.biome!=="sky").map(t=>`<circle cx="${t.x}" cy="${t.y}" r="125" fill="${BIOMES[t.biome].g}"/>`).join("");
+  const isl=smooth(MAIN_ISLAND)+ISLETS.map(p=>smooth(p)).join("");
+  const waves=Array.from({length:70},()=>{const x=r()*1000,y=r()*875;return `<path d="M${x|0},${y|0}q6,-5 12,0t12,0" stroke="#ffffff" stroke-opacity=".22" stroke-width="2" fill="none"/>`}).join("");
+  mapArtCache=`<defs>
+   <clipPath id="isl"><path d="${isl}"/></clipPath>
+   <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter>
+   <filter id="sh" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity=".35"/></filter>
+   <radialGradient id="seaG" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#3f95e0"/><stop offset="1" stop-color="#1f5fae"/></radialGradient>
+   <linearGradient id="rbw" x1="0" x2="1"><stop offset="0" stop-color="#ff4d6d"/><stop offset=".25" stop-color="#ffc31f"/><stop offset=".5" stop-color="#3ddc84"/><stop offset=".75" stop-color="#3fa9ff"/><stop offset="1" stop-color="#b65cff"/></linearGradient>
+   <marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#e3262f"/></marker>
+   <marker id="ahb" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#3b82f6"/></marker>
+  </defs>
+  <rect x="-2000" y="-2000" width="5000" height="5000" fill="url(#seaG)"/>
+  <g>${waves}</g>
+  <path d="${isl}" fill="#7fc6e8" stroke="#a9dcf2" stroke-width="34" stroke-linejoin="round" opacity=".7"/>
+  <path d="${isl}" fill="#f4e3a6" stroke="#f4e3a6" stroke-width="10" stroke-linejoin="round"/>
+  <g clip-path="url(#isl)"><g filter="url(#soft)">${blobs}</g>
+    <g>${deco}</g>
+    ${RIVERS.map(d=>`<path d="${d}" fill="none" stroke="#4aa3e6" stroke-width="9" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#8fd0f5" stroke-width="3" stroke-linecap="round"/>`).join("")}
+    <path d="M300,440 q25,-40 60,-20 q30,30 -10,55 q-40,10 -50,-35z" fill="#3b2a24" opacity=".75"/>
+    <path d="M330,175 q40,-30 80,-5 q10,40 -40,45 q-40,-5 -40,-40z" fill="#ff7a2a" opacity=".55"/>
+  </g>
+  <path d="${isl}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.5" stroke-dasharray="2 9" stroke-linecap="round"/>`;
+  return mapArtCache;
+}
+const LBL_UP=new Set(["dry-bones-burnout","rainbow-road"]);
+function markerSVG(t){
+  const b=BIOMES[t.biome];const won=get("main-"+t.id).w;const hasS=snesOf(t.id).length;
+  const R=31;
+  const face=t.id==="rainbow-road"
+    ?`<circle r="${R+6}" fill="none" stroke="url(#rbw)" stroke-width="9"/><circle r="${R-2}" fill="${b.g}" stroke="#fff" stroke-width="4"/>`
+    :`<circle r="${R+4}" fill="#16203a" opacity=".25" transform="translate(0,4)"/><circle r="${R}" fill="${b.g}" stroke="#fff" stroke-width="5"/><circle r="${R-9}" fill="${b.a}" opacity=".9"/>`;
+  const fs=t.abbr.length>2?15:18;
+  return `<g class="mk" data-id="${t.id}" transform="translate(${t.x},${t.y})" tabindex="0" role="button" aria-label="${esc(t.name)} öffnen">
+   <circle class="halo" r="${R+15}" fill="#ffc31f" opacity=".0" style="fill-opacity:.45"/>
+   <g class="face" filter="url(#sh)">${face}
+    <text y="${fs*.36}" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-style="italic" font-size="${fs}" fill="#fff" stroke="#16203a" stroke-width="3.5" paint-order="stroke">${esc(t.abbr)}</text>
+    ${won?`<g transform="translate(${R-6},${-R+4}) scale(.95)"><path transform="translate(-12,-12)" d="${"M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21l1.5-7L2 9.3l7-.8z"}" fill="#ffc31f" stroke="#16203a" stroke-width="2"/></g>`:""}
+    ${hasS?`<g transform="translate(${-R+2},${-R+4})"><rect x="-15" y="-9" width="30" height="18" rx="5" fill="#5b5fc7" stroke="#fff" stroke-width="2"/><text y="4.5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-size="10" fill="#fff">SNES</text></g>`:""}
+   </g>
+   <text class="lbl" y="${LBL_UP.has(t.id)?-R-14:R+22}" text-anchor="middle" font-size="16">${esc(t.name)}</text>
+  </g>`;
+}
+const VB0={x:30,y:20,w:940,h:840};
+let vb={...VB0};
+function fitVB(){ // passend zum Seitenverhältnis des Containers
+  const el=$("#map");const r=el.getBoundingClientRect();if(!r.width)return;
+  const ar=r.width/r.height;let w=VB0.w,h=VB0.h;
+  if(w/h<ar)w=h*ar;else h=w/ar;
+  vb={x:VB0.x+(VB0.w-w)/2,y:VB0.y+(VB0.h-h)/2,w,h};applyVB();
+}
+function applyVB(){$("#map").setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`)}
+function renderMap(){
+  const svg=$("#map");
+  svg.innerHTML=worldArt()+`<g class="conn" id="conn"></g><g id="mks">${TRACKS.map(markerSVG).join("")}</g>`;
+  if(selTrack)markSel(selTrack);
+}
+function updateMarkers(){const g=$("#mks");if(!g)return;g.innerHTML=TRACKS.map(markerSVG).join("");if(selTrack)markSel(selTrack)}
+function connPath(a,b,bend){const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const dx=b.x-a.x,dy=b.y-a.y;const L=Math.hypot(dx,dy)||1;
+  const k=Math.min(60,L*.22)*bend;const cx=mx-dy/L*k,cy=my+dx/L*k;
+  const sh=40/L;const ax=a.x+dx*sh,ay=a.y+dy*sh,bx=b.x-dx*sh,by=b.y-dy*sh;
+  return `M${ax.toFixed(1)},${ay.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}`}
+function showConn(id){
+  const g=$("#conn");if(!g)return;if(!id){g.innerHTML="";document.querySelectorAll(".mk").forEach(m=>m.classList.remove("dim"));return}
+  const a=T[id];const outs=outOf(id),ins=inTo(id);const rel=new Set([id,...outs.map(v=>v.to),...ins.map(v=>v.from)]);
+  g.innerHTML=ins.map(v=>`<path d="${connPath(T[v.from],a,1)}" stroke="#3b82f6" stroke-width="4" stroke-dasharray="9 7" marker-end="url(#ahb)"/>`).join("")+
+    outs.map(v=>`<path d="${connPath(a,T[v.to],1)}" stroke="#fff" stroke-width="9" opacity=".7"/><path d="${connPath(a,T[v.to],1)}" stroke="#e3262f" stroke-width="5" marker-end="url(#ah)"/>`).join("");
+  document.querySelectorAll(".mk").forEach(m=>m.classList.toggle("dim",!rel.has(m.dataset.id)));
+}
+let selTrack=null;
+function markSel(id){document.querySelectorAll(".mk").forEach(m=>m.classList.toggle("sel",m.dataset.id===id));showConn(id)}
+
+/* Pan & Zoom */
+(function(){
+  const svg=$("#map");const pts=new Map();let moved=0,start=null,pinch=null,downMk=null;
+  const toSvg=(cx,cy)=>{const r=svg.getBoundingClientRect();return{x:vb.x+(cx-r.left)/r.width*vb.w,y:vb.y+(cy-r.top)/r.height*vb.h}};
+  function zoomAt(f,cx,cy){const p=toSvg(cx,cy);const nw=Math.max(180,Math.min(VB0.w*1.6,vb.w*f));const k=nw/vb.w;
+    vb={x:p.x-(p.x-vb.x)*k,y:p.y-(p.y-vb.y)*k,w:nw,h:vb.h*k};applyVB()}
+  window.zoomAt=zoomAt;
+  svg.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.deltaY>0?1.12:1/1.12,e.clientX,e.clientY)},{passive:false});
+  svg.addEventListener("pointerdown",e=>{downMk=e.target.closest(".mk");svg.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=0;
+    start={x:e.clientX,y:e.clientY,vb:{...vb}};if(pts.size===2){const[a,b]=[...pts.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),vb:{...vb}}}});
+  svg.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const r=svg.getBoundingClientRect();
+    if(pts.size===2&&pinch){const[a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);vb={...pinch.vb};zoomAt(pinch.d/d,(a.x+b.x)/2,(a.y+b.y)/2);moved=99;return}
+    const dx=e.clientX-start.x,dy=e.clientY-start.y;if(Math.abs(dx)+Math.abs(dy)>6){moved=Math.abs(dx)+Math.abs(dy);svg.classList.add("drag")}
+    if(moved>6){vb.x=start.vb.x-dx/r.width*vb.w;vb.y=start.vb.y-dy/r.height*vb.h;applyVB()}});
+  const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(pts.size===1){const p=[...pts.values()][0];start={x:p.x,y:p.y,vb:{...vb}}}svg.classList.remove("drag")};
+  svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",up);
+  svg.addEventListener("click",e=>{if(moved>6){moved=0;return}const m=downMk||e.target.closest(".mk");downMk=null;if(m)location.hash="strecke-"+m.dataset.id;else if(selTrack)location.hash="karte"});
+  svg.addEventListener("keydown",e=>{const m=e.target.closest(".mk");if(m&&(e.key==="Enter"||e.key===" ")){e.preventDefault();location.hash="strecke-"+m.dataset.id}});
+  svg.addEventListener("pointerover",e=>{const m=e.target.closest(".mk");if(m&&!selTrack)showConn(m.dataset.id)});
+  svg.addEventListener("pointerout",e=>{const m=e.target.closest(".mk");if(m&&!selTrack&&!(e.relatedTarget&&m.contains(e.relatedTarget)))showConn(null)});
+  const c=()=>{const r=svg.getBoundingClientRect();return[r.left+r.width/2,r.top+r.height/2]};
+  $("#zin").onclick=()=>zoomAt(1/1.35,...c());$("#zout").onclick=()=>zoomAt(1.35,...c());$("#zreset").onclick=fitVB;
+  addEventListener("resize",()=>{if(!$("#v-map").hidden)fitVB()});
+  setTimeout(()=>{$("#hint").style.opacity=0},5000);
+})();
+
+/* =====================================================================
+   STRECKEN-LAYOUTS (schematische Ersatzdarstellungen)
+   ===================================================================== */
+function loopPts(seed,cx,cy,rx,ry,n){const r=rng(seed);const pts=[];
+  for(let i=0;i<n;i++){const a=i/n*Math.PI*2+(r()-.5)*.4;let k=.55+r()*.45;if(r()<.22)k*=.62;pts.push([cx+Math.cos(a)*rx*k,cy+Math.sin(a)*ry*k])}return pts}
+function mainLayout(v,small){
+  const t=T[v.track];const b=BIOMES[t.biome];const r=rng(v.id+"deko");
+  const pts=loopPts(v.id,500,335,400,255,small?9:12);const d=smooth(pts);
+  const road=t.biome==="sky"?"#2a2f6b":t.biome==="snow"?"#5a6680":"#4a4f5c";
+  let deco="";if(!small)for(let i=0;i<90;i++){const x=r()*1000,y=r()*660,s=5+r()*12;
+    deco+=t.biome==="sky"?`<circle cx="${x|0}" cy="${y|0}" r="${(s/5).toFixed(1)}" fill="#fff" opacity="${(.3+r()*.7).toFixed(2)}"/>`
+      :`<circle cx="${x|0}" cy="${y|0}" r="${s|0}" fill="${b.a}" opacity=".35"/>`}
+  const edge=t.biome==="sky"?`<path d="${d}" fill="none" stroke="url(#rbw2)" stroke-width="${small?26:70}" stroke-linejoin="round"/>`
+    :`<path d="${d}" fill="none" stroke="#fff" stroke-width="${small?24:66}" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="#e3262f" stroke-width="${small?24:66}" stroke-dasharray="16 16" stroke-linejoin="round"/>`;
+  return `<svg viewBox="0 0 1000 660" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Schematisches Layout ${esc(v.name)}">
+   <defs><linearGradient id="rbw2" x1="0" x2="1"><stop offset="0" stop-color="#ff4d6d"/><stop offset=".3" stop-color="#ffc31f"/><stop offset=".55" stop-color="#3ddc84"/><stop offset=".8" stop-color="#3fa9ff"/><stop offset="1" stop-color="#b65cff"/></linearGradient></defs>
+   <rect width="1000" height="660" fill="${b.g}"/>${deco}
+   ${edge}<path class="trk" d="${d}" fill="none" stroke="${road}" stroke-width="${small?16:52}" stroke-linejoin="round"/>
+   ${small?"":`<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="20 18"/><g class="dyn"></g>`}
+  </svg>`;
+}
+function snesLayout(v,small){
+  const th={mc:{bg:"#58b84a",tile:"#4aa63e",road:"#8c8c96",edge:"#f2f2f2",ac:"#e3262f"},
+            gv:{bg:"#2b2440",tile:"#352d4f",road:"#a87444",edge:"#6b4424",ac:"#8a7cff"},
+            ci:{bg:"#7a4a2a",tile:"#6b3f22",road:"#c8925a",edge:"#4a2a14",ac:"#ffd27a"},
+            vl:{bg:"#cfe6f7",tile:"#b7d7ef",road:"#e9f4fb",edge:"#6aa6d6",ac:"#2b78c9"},
+            kb:{bg:"#2f9fd6",tile:"#2a8fc2",road:"#f2dc96",edge:"#e0c071",ac:"#ffffff"}}[v.theme];
+  const r=rng(v.id);const G=30;const W=33,H=22;
+  // Rechteck mit zufälligen Einbuchtungen (rasterförmig wie im Original-Stil der 16-Bit-Ära)
+  let x0=3,y0=3,x1=W-4,y1=H-4;const pts=[[x0,y0]];
+  const notch=(a,b,fixed,dir,horiz)=>{const out=[];let p=a;const step=b>a?1:-1;
+    while((b-p)*step>6){const len=3+Math.floor(r()*4);const at=p+step*(2+Math.floor(r()*3));const end=at+step*len;if((b-end)*step<3)break;
+      if(r()<.6){const dep=2+Math.floor(r()*4);out.push(horiz?[at,fixed]:[fixed,at],horiz?[at,fixed+dir*dep]:[fixed+dir*dep,at],horiz?[end,fixed+dir*dep]:[fixed+dir*dep,end],horiz?[end,fixed]:[fixed,end])}p=end}
+    return out};
+  pts.push(...notch(x0,x1,y0,1,true),[x1,y0],...notch(y0,y1,x1,-1,false),[x1,y1],...notch(x1,x0,y1,-1,true),[x0,y1],...notch(y1,y0,x0,1,false));
+  const d="M"+pts.map(p=>`${p[0]*G},${p[1]*G}`).join("L")+"Z";
+  const sw=small?30:46;
+  return `<svg viewBox="0 0 1000 660" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges" role="img" aria-label="Schematisches Layout ${esc(v.name)}">
+   <defs><pattern id="tl-${v.id}" width="60" height="60" patternUnits="userSpaceOnUse"><rect width="60" height="60" fill="${th.bg}"/><rect width="30" height="30" fill="${th.tile}"/><rect x="30" y="30" width="30" height="30" fill="${th.tile}"/></pattern></defs>
+   <rect width="1000" height="660" fill="url(#tl-${v.id})"/>
+   <path d="${d}" fill="none" stroke="${th.edge}" stroke-width="${sw+16}" stroke-linejoin="miter"/>
+   <path class="trk" d="${d}" fill="none" stroke="${th.road}" stroke-width="${sw}" stroke-linejoin="miter"/>
+   ${small?"":`<path d="${d}" fill="none" stroke="${th.ac}" stroke-opacity=".5" stroke-width="4" stroke-dasharray="12 24"/><g class="dyn"></g>`}
+  </svg>`;
+}
+function routeLayout(v,small){
+  const a=T[v.from],b=T[v.to];const r=rng(v.id);
+  const pad=small?60:110;let x0=Math.min(a.x,b.x)-pad,x1=Math.max(a.x,b.x)+pad,y0=Math.min(a.y,b.y)-pad,y1=Math.max(a.y,b.y)+pad;
+  // auf Bühnen-Seitenverhältnis bringen
+  const ar=1000/660;let w=x1-x0,h=y1-y0;if(w/h<ar){const nw=h*ar;x0-=(nw-w)/2;w=nw}else{const nh=w/ar;y0-=(nh-h)/2;h=nh}
+  const n=4;const pts=[[a.x,a.y]];const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
+  for(let i=1;i<n;i++){const f=i/n;const off=(r()-.5)*Math.min(90,L*.35);pts.push([a.x+dx*f-dy/L*off,a.y+dy*f+dx/L*off])}
+  pts.push([b.x,b.y]);const d=smooth(pts,false);
+  const sc=w/1000;
+  const pin=(t,lab,col,up)=>`<g transform="translate(${t.x},${t.y}) scale(${sc*1.6})"><circle r="24" fill="${col}" stroke="#fff" stroke-width="5"/><text y="6" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-style="italic" font-size="15" fill="#fff">${esc(t.abbr)}</text>${small?"":`<text y="${up?-36:48}" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-style="italic" font-size="17" fill="#fff" stroke="#16203a" stroke-width="5" paint-order="stroke">${esc(lab)}</text>`}</g>`;
+  return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Route ${esc(v.name)} auf der Weltkarte">
+   ${worldArt()}
+   <path d="${d}" fill="none" stroke="#16203a" stroke-opacity=".35" stroke-width="${(small?22:16)*sc*1.5}" stroke-linecap="round" transform="translate(0,${3*sc})"/>
+   <path d="${d}" fill="none" stroke="#fff" stroke-width="${(small?20:15)*sc*1.5}" stroke-linecap="round"/>
+   <path class="trk" d="${d}" fill="none" stroke="#7a3fd1" stroke-width="${(small?12:9)*sc*1.5}" stroke-linecap="round" data-sc="${sc}"/>
+   ${small?"":`<g class="dyn"></g>`}
+   ${pin(a,"Start: "+a.name,"#1f9d55",a.y<b.y)}${pin(b,"Ziel: "+b.name,"#e3262f",b.y<=a.y)}
+  </svg>`;
+}
+function layoutFor(v,small){return v.type==="main"?mainLayout(v,small):v.type==="snes"?snesLayout(v,small):routeLayout(v,small)}
+function decorate(svgEl,v){ // Richtungspfeile, Start/Ziel, Abschnittsmarken
+  const p=svgEl.querySelector(".trk"),g=svgEl.querySelector(".dyn");if(!p||!g)return;
+  const L=p.getTotalLength();let out="";
+  const at=f=>{const q=p.getPointAtLength(L*f),q2=p.getPointAtLength(Math.min(L,L*f+2));return{x:q.x,y:q.y,a:Math.atan2(q2.y-q.y,q2.x-q.x)*180/Math.PI}};
+  if(v.type==="int"){const sc=+p.dataset.sc||1;
+    for(let i=1;i<v.sections;i++){const q=at(i/v.sections);
+      out+=`<g transform="translate(${q.x},${q.y}) scale(${sc*1.5})"><circle r="15" fill="#ffc31f" stroke="#16203a" stroke-width="3"/><text y="5.5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="900" font-size="15" fill="#16203a">${i}</text></g>`}
+    for(let i=0;i<v.sections;i++){const q=at((i+.5)/v.sections);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a}) scale(${sc*1.5})"><path d="M-6,-8 L6,0 L-6,8" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>`}
+  }else{
+    const s=at(0);out+=`<g transform="translate(${s.x},${s.y}) rotate(${s.a+90})"><g>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${-28+i*7}" y="-7" width="7" height="7" fill="${i%2?"#fff":"#16203a"}"/><rect x="${-28+i*7}" y="0" width="7" height="7" fill="${i%2?"#16203a":"#fff"}"/>`).join("")}</g></g>`;
+    for(let i=1;i<9;i++){const q=at(i/9);out+=`<g transform="translate(${q.x},${q.y}) rotate(${q.a})"><path d="M-8,-10 L6,0 L-8,10" fill="none" stroke="#ffc31f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>`}
+    const q=at(0.04);out+=`<g transform="translate(${q.x},${q.y-46})"><rect x="-44" y="-15" width="88" height="28" rx="14" fill="#16203a"/><text y="5" text-anchor="middle" font-family="Rubik,system-ui,sans-serif" font-weight="800" font-size="14" fill="#fff">START</text></g>`;
+  }
+  g.innerHTML=out;
+}
+
+/* =====================================================================
+   PANEL: Streckenauswahl
+   ===================================================================== */
+let panelTab="out";
+function vcard(v,sub){return `<button class="vcard" data-go="${v.id}"><span class="thumb">${layoutFor(v,true)}</span><span class="tx">${typePill(v.type)}<b>${esc(v.type==="int"?"→ "+T[v.to].name:v.name)}</b><small>${esc(sub)}</small></span><span class="st">${statusHTML(v.id)}</span></button>`}
+function rrow(v,dir){const other=dir==="out"?T[v.to]:T[v.from];
+  return `<button class="rrow" data-go="${v.id}"><span class="arrow">${ico("arrow",20)}</span><span class="nm">${dir==="out"?"nach ":"von "}${esc(other.name)}<small>${v.sections} Abschnitte${v.oneway?" · nur in diese Richtung":""}</small></span>${statusHTML(v.id)}</button>`}
+function renderPanel(id){
+  const t=T[id];const b=BIOMES[t.biome];const outs=outOf(id),ins=inTo(id),sn=snesOf(id);
+  const el=$("#panel");
+  el.innerHTML=`<div class="p-head" style="background:linear-gradient(135deg,${t.biome==="snow"?"#6b9fd4":b.a},${t.biome==="snow"?"#2b78c9":t.biome==="coast"?"#1d8fb0":b.d})">
+     <button class="p-close" aria-label="Schließen" data-close>×</button>
+     <span class="chip" style="background:rgba(0,0,0,.2);color:#fff">${esc(b.n)}</span>
+     <h2>${esc(t.name)}</h2>
+     <div class="meta">${t.cups.map(c=>`<span class="chip">${esc(c.name)}</span>`).join("")}<span class="chip">${outs.length} Abfahrten · ${ins.length} Ankünfte</span></div>
+   </div>
+   <div class="p-body">
+     <div><p class="sec-t">Hauptstrecke</p>${vcard(VI["main-"+id],"3 Runden · "+t.cups.map(c=>c.name).join(", "))}</div>
+     ${sn.length?`<div><p class="sec-t">SNES-Strecken</p><div class="vlist">${sn.map(s=>vcard(s,"Klassiker aus Update 1.8.0")).join("")}</div></div>`:""}
+     <div><p class="sec-t">Intermissions</p>
+       <div class="tabs" role="tablist">
+         <button role="tab" aria-selected="${panelTab==="out"}" data-tab="out">Von hier (${outs.length})</button>
+         <button role="tab" aria-selected="${panelTab==="in"}" data-tab="in">Hierher (${ins.length})</button>
+       </div>
+       <div class="vlist">${(panelTab==="out"?outs:ins).map(v=>rrow(v,panelTab)).join("")||`<p class="note-empty">${panelTab==="out"?"Von dieser Strecke führt keine Intermission weg – Rainbow Road ist nur von Peach Stadium aus erreichbar.":"Keine Intermission führt hierher."}</p>`}</div>
+     </div>
+   </div>`;
+}
+$("#panel").addEventListener("click",e=>{
+  const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
+  if(e.target.closest("[data-close]")){location.hash="karte";return}
+  const tb=e.target.closest("[data-tab]");if(tb){panelTab=tb.dataset.tab;renderPanel(selTrack)}
+});
+
+/* =====================================================================
+   DETAILSEITE
+   ===================================================================== */
+let curV=null,noteTimer=null,imgURL=null,showOwn=true;
+function siblings(v){return V.filter(x=>x.type===v.type).sort((a,b)=>a.order-b.order)}
+async function renderDetail(id){
+  const v=VI[id];if(!v){location.hash="karte";return}
+  curV=v;const d=get(id);const t=T[v.track];
+  const host=v.type==="int"?T[v.from]:t;
+  const outs=outOf(host.id),sn=snesOf(host.id);
+  let sw=`<button class="sw" data-go="main-${host.id}" aria-current="${v.id==="main-"+host.id}">Hauptstrecke</button>`;
+  sw+=sn.map(s=>`<button class="sw" data-go="${s.id}" aria-current="${v.id===s.id}"><span class="pill snes" style="padding:1px 6px">SNES</span>${esc(s.name.replace("SNES ",""))}</button>`).join("");
+  if(outs.length)sw+=`<select id="intSel" aria-label="Intermission wählen"><option value="">Intermission von ${esc(host.name)} …</option>${outs.map(o=>`<option value="${o.id}" ${o.id===v.id?"selected":""}>→ ${esc(T[o.to].name)}</option>`).join("")}</select>`;
+  if(v.type==="int"){const rev=VI["r-"+v.to+"--"+v.from];
+    sw+=`<button class="sw" data-go="main-${v.to}">Ziel: ${esc(T[v.to].name)}</button>`+(rev?`<button class="sw" data-go="${rev.id}">⇄ Gegenrichtung</button>`:"")}
+  const sib=siblings(v);const idx=sib.findIndex(x=>x.id===v.id);
+  const sub=v.type==="main"?`${BIOMES[t.biome].n} · ${t.cups.map(c=>c.name).join(" · ")}`
+    :v.type==="snes"?`Super-Mario-Kart-Klassiker · auswählbar über ${t.name}`
+    :`Verbindungsstrecke · ${v.sections} Abschnitte${v.oneway?" · nur in diese Richtung befahrbar":""}`;
+  const facts=v.type==="main"?[["Region",BIOMES[t.biome].n],["Cups",t.cups.map(c=>c.name).join(", ")],["Abfahrten",outOf(t.id).length+" Intermissions"],["Ankünfte",inTo(t.id).length+" Intermissions"],["SNES",sn.length?sn.map(s=>s.name.replace("SNES ","")).join(", "):"–"]]
+    :v.type==="snes"?[["Herkunft","Super Mario Kart (SNES)"],["Gastgeber",t.name],["Hinzugefügt","Update 1.8.0"],["Items","Item-Felder statt Item-Boxen"]]
+    :[["Start",T[v.from].name],["Ziel",T[v.to].name],["Abschnitte",String(v.sections)],["Richtung",v.oneway?"Einbahn (keine Gegenroute)":"Gegenroute vorhanden"],...(v.gimmicks.length?[["Besonderheiten",v.gimmicks.join(", ")]]:[])];
+  $("#v-detail").innerHTML=`<div class="detail">
+    <div class="d-head">
+      <button class="back" data-back>${ico("left",18)}Karte</button>
+      <div class="d-title">${typePill(v.type)}<h1>${esc(v.name)}</h1><p>${esc(sub)}</p></div>
+      <div class="d-nav"><button aria-label="Vorherige ${TYPE_N[v.type]}" data-go="${sib[(idx-1+sib.length)%sib.length].id}">${ico("left",20)}</button><button aria-label="Nächste ${TYPE_N[v.type]}" data-go="${sib[(idx+1)%sib.length].id}">${ico("right",20)}</button></div>
+    </div>
+    <div class="switch" aria-label="Variante wechseln">${sw}</div>
+    <div class="d-grid">
+      <div class="stage">
+        <div class="canvas" id="canvas">${layoutFor(v,false)}</div>
+        <div class="stage-bar">
+          <span class="cap" id="cap">${v.type==="int"?"Route auf der Weltkarte mit Abschnittsmarken. Eigener Screenshot der echten Streckenkarte möglich.":"Schematische Ersatzdarstellung – kein Originallayout. Lade einen eigenen Screenshot der Streckenkarte hoch."}</span>
+          <button class="btn" id="tglImg" hidden>Schema zeigen</button>
+          <label class="btn primary" for="upl">Bild hochladen</label><input id="upl" type="file" accept="image/*" hidden>
+          <button class="btn" id="delImg" hidden>Bild entfernen</button>
+        </div>
+      </div>
+      <div class="side">
+        <div class="box">
+          <h3>Meine Bewertung <button class="linkbtn" id="rclr" ${d.r?"":"hidden"}>zurücksetzen</button></h3>
+          <div class="score"><span class="big ${d.r?"":"none"}" id="rbig">${d.r||"–"}</span><span class="of">/ 10</span><span class="word" id="rword">${d.r?RATE_WORDS[d.r]:"Noch nicht bewertet"}</span></div>
+          <div class="rates" role="radiogroup" aria-label="Bewertung von 1 bis 10">${Array.from({length:10},(_,i)=>`<button role="radio" data-r="${i+1}" aria-label="${i+1} von 10" aria-checked="${d.r===i+1}">${i+1}</button>`).join("")}</div>
+        </div>
+        <div class="box">
+          <h3>Habe ich hier schon gewonnen?</h3>
+          <button class="win" id="win" role="switch" aria-checked="${!!d.w}"><span class="tro">${ico("trophy",30)}</span><span><b id="wtxt">${d.w?"Gewonnen!":"Noch nicht gewonnen"}</b><small id="wsub">${d.w&&d.wd?"seit "+new Date(d.wd).toLocaleDateString("de-DE"):"Antippen zum Umschalten"}</small></span><span class="tog"></span></button>
+        </div>
+        <div class="box notes">
+          <h3><label for="note-${v.id}">Meine Notizen</label><span class="saved" id="saved"></span></h3>
+          <div class="tpl">${["Abkürzung","Guter Fahrweg","Schwierige Kurve","Überholstelle","Strategie"].map(x=>`<button data-tpl="${x}">+ ${x}</button>`).join("")}</div>
+          <textarea id="note-${v.id}" placeholder="z. B. Abkürzung nach der zweiten Kurve mit Pilz, Überholen auf der langen Geraden …">${esc(d.n||"")}</textarea>
+        </div>
+        <div class="box"><h3>Steckbrief</h3><dl class="facts">${facts.map(f=>`<dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd>`).join("")}</dl><p class="sync" style="margin:10px 0 0">${esc(syncText)}</p></div>
+      </div>
+    </div>
+  </div>`;
+  paintRates(d.r);
+  const svg=$("#canvas svg");if(svg)decorate(svg,v);
+  showOwn=true;await loadImg(v.id);
+  $("#v-detail").scrollTop=0;
+}
+function paintRates(r){document.querySelectorAll(".rates button").forEach(b=>{const n=+b.dataset.r;const on=r&&n<=r;b.classList.toggle("fill",!!on);b.style.background=on?rateColor(r):"";b.setAttribute("aria-checked",String(n===r))})}
+async function loadImg(id){
+  const blob=await IDB.get("img-"+id);if(curV?.id!==id)return;
+  if(imgURL){URL.revokeObjectURL(imgURL);imgURL=null}
+  const has=!!blob;$("#delImg").hidden=!has;$("#tglImg").hidden=!has;
+  if(has){imgURL=URL.createObjectURL(blob);if(showOwn){$("#canvas").innerHTML=`<img src="${imgURL}" alt="Eigenes Streckenbild ${esc(curV.name)}">`;$("#cap").textContent="Dein eigenes Bild (nur auf diesem Gerät gespeichert).";$("#tglImg").textContent="Schema zeigen"}}
+}
+function shrink(file){return new Promise(res=>{const im=new Image();im.onload=()=>{const m=1800,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k|0;c.height=im.height*k|0;c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>res(b||file),"image/jpeg",.88);URL.revokeObjectURL(im.src)};im.onerror=()=>res(file);im.src=URL.createObjectURL(file)})}
+$("#v-detail").addEventListener("click",async e=>{
+  if(!curV)return;const id=curV.id;
+  const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
+  if(e.target.closest("[data-back]")){location.hash="strecke-"+(curV.type==="int"?curV.from:curV.track);return}
+  const rb=e.target.closest("[data-r]");if(rb){const r=+rb.dataset.r;setV(id,{r});
+    $("#rbig").textContent=r;$("#rbig").classList.remove("none");$("#rword").textContent=RATE_WORDS[r];$("#rclr").hidden=false;paintRates(r);return}
+  if(e.target.closest("#rclr")){setV(id,{r:null});$("#rbig").textContent="–";$("#rbig").classList.add("none");$("#rword").textContent="Noch nicht bewertet";$("#rclr").hidden=true;paintRates(0);return}
+  if(e.target.closest("#win")){const w=!get(id).w;setV(id,{w,wd:w?Date.now():null});const b=$("#win");b.setAttribute("aria-checked",String(w));$("#wtxt").textContent=w?"Gewonnen!":"Noch nicht gewonnen";$("#wsub").textContent=w?"seit "+new Date().toLocaleDateString("de-DE"):"Antippen zum Umschalten";return}
+  const tp=e.target.closest("[data-tpl]");if(tp){const ta=$(`#note-${CSS.escape(id)}`);const pre=ta.value&&!ta.value.endsWith("\n")?"\n":"";ta.value+=pre+"• "+tp.dataset.tpl+": ";ta.focus();ta.selectionStart=ta.selectionEnd=ta.value.length;saveNote(ta.value);return}
+  if(e.target.closest("#delImg")){await IDB.set("img-"+id,null);$("#canvas").innerHTML=layoutFor(curV,false);decorate($("#canvas svg"),curV);$("#delImg").hidden=true;$("#tglImg").hidden=true;return}
+  if(e.target.closest("#tglImg")){showOwn=!showOwn;if(showOwn)loadImg(id);else{$("#canvas").innerHTML=layoutFor(curV,false);decorate($("#canvas svg"),curV);$("#tglImg").textContent="Eigenes Bild zeigen"}}
+});
+$("#v-detail").addEventListener("change",async e=>{
+  if(e.target.id==="intSel"&&e.target.value){location.hash="v-"+e.target.value;return}
+  if(e.target.id==="upl"&&e.target.files[0]&&curV){const b=await shrink(e.target.files[0]);const ok=await IDB.set("img-"+curV.id,b);if(!ok){$("#cap").textContent="Bild konnte in diesem Browser nicht gespeichert werden.";return}showOwn=true;loadImg(curV.id)}
+});
+function saveNote(val){if(!curV)return;const id=curV.id;$("#saved").textContent="Speichert …";clearTimeout(noteTimer);
+  noteTimer=setTimeout(()=>{setV(id,{n:val});const s=$("#saved");if(s&&curV?.id===id)s.textContent="✓ Gespeichert"},500)}
+$("#v-detail").addEventListener("input",e=>{if(e.target.tagName==="TEXTAREA")saveNote(e.target.value)});
+
+/* =====================================================================
+   ALLE STRECKEN
+   ===================================================================== */
+const F={type:"all",st:"all",sort:"cup",q:""};
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9?]+/g," ").trim();
+function matches(v,q){if(!q)return true;const hay=norm(v.name+" "+(T[v.track]?.alias||"")+(v.type==="int"?" "+T[v.to].alias+" intermission route":"")+(v.type==="snes"?" snes klassiker":""));return norm(q).split(" ").every(w=>hay.includes(w))}
+function renderAll(){
+  $("#v-all").innerHTML=`<div class="page">
+    <div><h1>Alle Strecken</h1><p class="lead">30 Hauptstrecken, 202 Intermissions und 10 SNES-Strecken – filtern, sortieren und direkt öffnen.</p></div>
+    <div class="filters">
+      <div class="seg" data-f="type">${[["all","Alle"],["main","Haupt"],["int","Intermissions"],["snes","SNES"]].map(([k,l])=>`<button data-v="${k}" aria-pressed="${F.type===k}">${l}</button>`).join("")}</div>
+      <div class="seg" data-f="st">${[["all","Alle"],["won","Gewonnen"],["open","Offen"],["rated","Bewertet"],["notes","Mit Notizen"]].map(([k,l])=>`<button data-v="${k}" aria-pressed="${F.st===k}">${l}</button>`).join("")}</div>
+      <select id="fsort" aria-label="Sortierung"><option value="cup">Cup-Reihenfolge</option><option value="name">Name A–Z</option><option value="rate">Beste Bewertung</option></select>
+      <input id="fq" type="search" placeholder="In der Liste suchen …" value="${esc(F.q)}" aria-label="Liste filtern">
+    </div>
+    <p class="count" id="fcount"></p>
+    <div class="grid" id="fgrid"></div>
+  </div>`;
+  $("#fsort").value=F.sort;fillAll();
+}
+function fillAll(){
+  let list=V.filter(v=>(F.type==="all"||v.type===F.type)&&matches(v,F.q)).filter(v=>{const d=get(v.id);
+    return F.st==="all"||(F.st==="won"&&d.w)||(F.st==="open"&&!d.w)||(F.st==="rated"&&d.r)||(F.st==="notes"&&d.n&&d.n.trim())});
+  if(F.sort==="name")list.sort((a,b)=>a.name.localeCompare(b.name,"de"));
+  else if(F.sort==="rate")list.sort((a,b)=>(get(b.id).r||0)-(get(a.id).r||0)||a.order-b.order);
+  else list.sort((a,b)=>a.order-b.order);
+  $("#fcount").textContent=`${list.length} Einträge`;
+  $("#fgrid").innerHTML=list.map(v=>{const t=T[v.track];const sub=v.type==="main"?t.cups.map(c=>c.name).join(" · "):v.type==="snes"?"über "+t.name:`${v.sections} Abschnitte${v.oneway?" · Einbahn":""}`;
+    return `<button class="vcard" data-go="${v.id}"><span class="thumb">${v.type==="int"?`<svg viewBox="0 0 64 48"><rect width="64" height="48" fill="#7a3fd1"/><path d="M10 34 Q32 6 54 30" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="10" cy="34" r="5" fill="#1f9d55" stroke="#fff" stroke-width="2"/><circle cx="54" cy="30" r="5" fill="#e3262f" stroke="#fff" stroke-width="2"/></svg>`:layoutFor(v,true)}</span><span class="tx">${typePill(v.type)}<b>${esc(v.name)}</b><small>${esc(sub)}</small></span><span class="st">${statusHTML(v.id)}</span></button>`}).join("")||`<p class="note-empty">Keine Strecke passt zu diesen Filtern.</p>`;
+}
+$("#v-all").addEventListener("click",e=>{const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
+  const b=e.target.closest(".seg button");if(b){F[b.parentElement.dataset.f]=b.dataset.v;b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));fillAll()}});
+$("#v-all").addEventListener("input",e=>{if(e.target.id==="fq"){F.q=e.target.value;fillAll()}});
+$("#v-all").addEventListener("change",e=>{if(e.target.id==="fsort"){F.sort=e.target.value;fillAll()}});
+
+/* =====================================================================
+   FORTSCHRITT
+   ===================================================================== */
+function renderProg(){
+  const by=t=>V.filter(v=>t==="all"||v.type===t);
+  const won=l=>l.filter(v=>get(v.id).w).length;
+  const all=by("all"),rated=all.filter(v=>get(v.id).r);
+  const avg=rated.length?(rated.reduce((s,v)=>s+get(v.id).r,0)/rated.length):0;
+  const hist=Array.from({length:10},(_,i)=>rated.filter(v=>get(v.id).r===i+1).length);const hm=Math.max(1,...hist);
+  const top=[...rated].sort((a,b)=>get(b.id).r-get(a.id).r||a.order-b.order).slice(0,6);
+  const bar=(l,c)=>{const w=won(l);return `<div class="pbar"><i style="width:${(w/l.length*100).toFixed(1)}%;background:${c}"></i></div><span class="count">${w} von ${l.length} gewonnen</span>`};
+  const W=won(all);
+  $("#v-prog").innerHTML=`<div class="page">
+    <div><h1>Mein Fortschritt</h1><p class="lead">${W} von ${all.length} Streckenvarianten gewonnen · ${rated.length} bewertet</p></div>
+    <div class="stats">
+      <div class="stat"><span class="k">Gesamt</span><span class="v">${(W/all.length*100).toFixed(0)}<small> %</small></span>${bar(all,"linear-gradient(90deg,#e3262f,#ffc31f)")}</div>
+      <div class="stat"><span class="k">Hauptstrecken</span><span class="v">${won(by("main"))}<small> / 30</small></span>${bar(by("main"),"var(--main)")}</div>
+      <div class="stat"><span class="k">Intermissions</span><span class="v">${won(by("int"))}<small> / 202</small></span>${bar(by("int"),"var(--int)")}</div>
+      <div class="stat"><span class="k">SNES-Strecken</span><span class="v">${won(by("snes"))}<small> / 10</small></span>${bar(by("snes"),"var(--snes)")}</div>
+    </div>
+    <div><p class="sec-t">Cups – Siege auf den Hauptstrecken</p>
+    <div class="cupgrid">${CUPS.map(c=>{const w=c.t.filter(id=>get("main-"+id).w).length;return `<div class="cup"><h3><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="${c.c}"/>${w===4?`<path d="M7 12.5l3.2 3.2L17.5 8.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`:""}</svg>${esc(c.name)}<small>${w}/4</small></h3><ol>${c.t.map(id=>`<li><button data-go="main-${id}"><span class="n">${esc(T[id].name)}</span>${statusHTML("main-"+id)}</button></li>`).join("")}</ol></div>`}).join("")}</div></div>
+    <div class="two">
+      <div class="box"><h3>Bewertungen <span class="count">Ø ${avg?avg.toFixed(1).replace(".",","):"–"}</span></h3>
+        <div class="hist">${hist.map((n,i)=>`<div><span>${n}</span><i style="height:${(n/hm*100).toFixed(0)}%;background:${rateColor(i+1)}"></i><b>${i+1}</b></div>`).join("")}</div></div>
+      <div class="box"><h3>Meine Top-Strecken</h3><div class="toplist">${top.map(v=>`<button class="rrow" data-go="${v.id}"><span class="nm">${esc(v.name)}<small>${TYPE_N[v.type]}</small></span>${statusHTML(v.id)}</button>`).join("")||`<p class="note-empty">Noch keine Bewertungen. Öffne eine Strecke und vergib 1 bis 10 Punkte.</p>`}</div></div>
+    </div>
+    <div class="box backup"><h3>Sicherung</h3>
+      <p class="sync" style="margin:0 0 10px">${esc(syncText)}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn primary" id="exp">Sicherung exportieren</button>
+        <label class="btn" for="impf">Sicherung importieren</label><input type="file" id="impf" accept=".json,application/json" hidden>
+      </div>
+      <textarea id="expTxt" readonly hidden aria-label="Sicherungsdaten"></textarea>
+      <p class="msg" id="bmsg"></p>
+    </div>
+  </div>`;
+}
+$("#v-prog").addEventListener("click",async e=>{const go=e.target.closest("[data-go]");if(go){location.hash="v-"+go.dataset.go;return}
+  if(e.target.closest("#exp")){const json=JSON.stringify({app:"mkw-streckenzentrale",version:1,exported:new Date().toISOString(),data:S},null,1);
+    const fn="mkw-streckenzentrale-"+new Date().toISOString().slice(0,10)+".json";
+    let done=false;try{const dl=window.claude?.use?await claude.use("downloads"):null;if(dl){await dl.save({filename:fn,data:json});done=true;$("#bmsg").textContent="Sicherung gespeichert."}}catch(err){}
+    if(!done){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([json],{type:"application/json"}));a.download=fn;a.click();}catch(err){}
+      const ta=$("#expTxt");ta.hidden=false;ta.value=json;ta.select();try{await navigator.clipboard.writeText(json);$("#bmsg").textContent="Sicherung in die Zwischenablage kopiert (und unten angezeigt)."}catch(err){$("#bmsg").textContent="Sicherung unten markiert – kopieren und als .json speichern."}}}
+});
+$("#v-prog").addEventListener("change",e=>{if(e.target.id!=="impf"||!e.target.files[0])return;const f=new FileReader();
+  f.onload=()=>{try{const j=JSON.parse(f.result);const d=j.data||j;let n=0;for(const[k,v]of Object.entries(d)){if(VI[k]&&v&&typeof v==="object"){S[k]={...v,t:Date.now()};queue(k);n++}}saveLocal();refreshBadges();renderProg();$("#bmsg").textContent=n+" Einträge importiert."}catch(err){$("#bmsg").textContent="Diese Datei ist keine gültige Sicherung."}};
+  f.readAsText(e.target.files[0])});
+
+/* =====================================================================
+   SUCHE (Kopfleiste)
+   ===================================================================== */
+(function(){
+  const q=$("#q"),box=$("#sres");let hits=[],sel=0;
+  function show(){const s=q.value.trim();if(!s){box.hidden=true;return}
+    const tr=TRACKS.filter(t=>matches({name:t.name,track:t.id,type:"main"},s)).map(t=>({go:"strecke-"+t.id,lab:t.name,pill:"main",sub:"Strecke auf der Karte"}));
+    const vs=V.filter(v=>v.type!=="main"&&matches(v,s)).slice(0,12).map(v=>({go:"v-"+v.id,lab:v.name,pill:v.type,sub:v.type==="int"?v.sections+" Abschnitte":"über "+T[v.track].name}));
+    hits=[...tr,...vs].slice(0,14);sel=0;
+    box.innerHTML=hits.map((h,i)=>`<button data-i="${i}" class="${i===0?"on":""}">${typePill(h.pill)}<span style="flex:1;min-width:0"><b>${esc(h.lab)}</b><br><small style="color:var(--ink-soft)">${esc(h.sub)}</small></span></button>`).join("")||`<div class="empty">Nichts gefunden.</div>`;box.hidden=false}
+  const pick=i=>{if(!hits[i])return;location.hash=hits[i].go;q.value="";box.hidden=true;q.blur()};
+  q.addEventListener("input",show);q.addEventListener("focus",show);
+  q.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();sel=(sel+(e.key==="ArrowDown"?1:-1)+hits.length)%Math.max(1,hits.length);box.querySelectorAll("button").forEach((b,i)=>b.classList.toggle("on",i===sel))}
+    else if(e.key==="Enter"){e.preventDefault();pick(sel)}else if(e.key==="Escape"){box.hidden=true;q.blur()}});
+  box.addEventListener("mousedown",e=>{const b=e.target.closest("[data-i]");if(b){e.preventDefault();pick(+b.dataset.i)}});
+  q.addEventListener("blur",()=>setTimeout(()=>box.hidden=true,150));
+})();
+
+/* =====================================================================
+   ROUTING
+   ===================================================================== */
+function refreshBadges(){
+  const w=V.filter(v=>get(v.id).w).length;$("#mp-t").textContent=`${w}/${V.length}`;$("#mp-b").style.width=(w/V.length*100)+"%";
+  if(!$("#v-map").hidden){updateMarkers()}
+}
+function show(view){["v-map","v-detail","v-all","v-prog"].forEach(v=>$("#"+v).hidden=v!==view);
+  const nav=view==="v-map"||view==="v-detail"?"karte":view==="v-all"?"alle":"fortschritt";
+  document.querySelectorAll("[data-nav]").forEach(a=>a.setAttribute("aria-current",a.dataset.nav===nav?"page":"false"))}
+let mapReady=false;
+function route(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  if(h.startsWith("v-")){show("v-detail");renderDetail(h.slice(2));return}
+  if(h==="alle"){show("v-all");renderAll();return}
+  if(h==="fortschritt"){show("v-prog");renderProg();return}
+  show("v-map");
+  if(!mapReady){renderMap();mapReady=true;requestAnimationFrame(fitVB)}else updateMarkers();
+  const id=h.startsWith("strecke-")?h.slice(8):null;
+  if(id&&T[id]){if(selTrack!==id)panelTab=outOf(id).length?"out":"in";selTrack=id;renderPanel(id);$("#panel").classList.add("open");markSel(id)}
+  else{selTrack=null;$("#panel").classList.remove("open");markSel(null);showConn(null)}
+}
+addEventListener("hashchange",route);
+addEventListener("keydown",e=>{if(e.key==="Escape"&&selTrack&&document.activeElement.tagName!=="INPUT")location.hash="karte"});
+refreshBadges();route();initCloud();
+</script>
