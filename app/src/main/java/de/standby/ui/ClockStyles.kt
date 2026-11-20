@@ -81,9 +81,9 @@ private fun minuteString(t: LocalDateTime) = t.minute.toString().padStart(2, '0'
 fun ClockFace(style: String, time: LocalDateTime, modifier: Modifier = Modifier) {
     when (style) {
         "flip" -> FlipClock(time, modifier)
-        "neon" -> GlyphClock(time, neon = true, modifier = modifier)
+        "neon" -> GlyphClock(hourString(time) + minuteString(time), neon = true, modifier = modifier)
         "minimal" -> MinimalClock(time, modifier)
-        else -> GlyphClock(time, neon = false, modifier = modifier)
+        else -> GlyphClock(hourString(time) + minuteString(time), neon = false, modifier = modifier)
     }
 }
 
@@ -132,11 +132,21 @@ private fun glyphPath(ch: Char): android.graphics.Path {
     return if (clean.op(raw, android.graphics.Path(), android.graphics.Path.Op.UNION)) clean else raw
 }
 
+private val glyphCache = HashMap<String, androidx.compose.ui.graphics.Path>()
+
+/** Ziffernformen werden nur einmal pro Größe berechnet – das spart bei jedem Neuzeichnen Rechenzeit. */
+private fun cachedGlyph(ch: Char, size: Float): androidx.compose.ui.graphics.Path {
+    val key = ch.toString() + "@" + size.toInt()
+    glyphCache[key]?.let { return it }
+    if (glyphCache.size > 40) glyphCache.clear()
+    glyphPaint.textSize = size
+    return glyphPath(ch).asComposePath().also { glyphCache[key] = it }
+}
+
 @Composable
-private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
+private fun GlyphClock(digits: String, neon: Boolean, modifier: Modifier) {
     val pal = currentPalette()
     val neonCol = if (CoverTheme.palette != null && Prefs.coverTheme) lerp(pal.c1, Color.White, 0.55f) else Color.White
-    val digits = hourString(time) + minuteString(time)
     Canvas(modifier.fillMaxSize().graphicsLayer(compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen)) {
         val w = size.width
         val h = size.height
@@ -156,9 +166,7 @@ private fun GlyphClock(time: LocalDateTime, neon: Boolean, modifier: Modifier) {
         val baseline = (h + cap) / 2f
 
         val paths = digits.map { ch ->
-            val p = glyphPath(ch)
-            val adv = glyphPaint.measureText(ch.toString())
-            Triple(p.asComposePath(), adv, ch)
+            Triple(cachedGlyph(ch, fp), glyphPaint.measureText(ch.toString()), ch)
         }
         fun cellX(i: Int) = startX + i * cell + if (i >= 2) colonW else 0f
 

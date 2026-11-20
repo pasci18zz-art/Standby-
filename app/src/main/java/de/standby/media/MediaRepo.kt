@@ -46,8 +46,11 @@ data class MediaInfo(
         return if (duration > 0) p.coerceIn(0, duration) else p.coerceAtLeast(0)
     }
 
-    /** Anzeigen, solange Musik läuft oder bis zu 2 Minuten nach Pause. */
-    fun visible(): Boolean = playing || SystemClock.elapsedRealtime() - lastPlayingAt < 120_000
+    /** Anzeigen, solange Musik läuft oder bis zur eingestellten Zeit nach einer Pause (0 = immer). */
+    fun visible(): Boolean {
+        val min = de.standby.Prefs.musicHoldMin
+        return playing || min == 0 || SystemClock.elapsedRealtime() - lastPlayingAt < min * 60_000L
+    }
 }
 
 object MediaRepo {

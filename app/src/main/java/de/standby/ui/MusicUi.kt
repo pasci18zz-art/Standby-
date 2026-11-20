@@ -100,26 +100,50 @@ class CoverPal(val tint: Color, val c1: Color, val c2: Color, val c3: Color, val
 
 private val DefaultCoverPal = CoverPal(FallbackTint, Color(0xFF8B5CF6), Color(0xFFE879F9), Color(0xFFFBA8C8), Color(0xFFF25C54))
 
-private fun brighten(argb: Int): Color {
-    val c = Color(argb)
-    val l = c.luminance()
-    return if (l < 0.30f) lerp(c, Color.White, (0.62f - l).coerceIn(0f, 0.6f)) else c
+private fun hsvColor(h: Float, sat: Float, v: Float) = Color.hsv(((h % 360f) + 360f) % 360f, sat.coerceIn(0f, 1f), v.coerceIn(0f, 1f))
+
+private fun hueDist(a: Float, b: Float): Float {
+    val d = kotlin.math.abs(a - b) % 360f
+    return if (d > 180f) 360f - d else d
+}
+
+private class Cand(val h: Float, val s: Float, val v: Float, val w: Float)
+
+/**
+ * Wählt drei klar unterscheidbare, leuchtende Farben aus dem Cover (nicht nur die häufigsten).
+ * Gibt es zu wenig Farbunterschied, werden passende Nachbarfarbtöne dazugemischt – so wird die Uhr bunt.
+ */
+private fun buildCoverPal(bmp: Bitmap): CoverPal {
+    val p = Palette.from(bmp).maximumColorCount(24).generate()
+    val total = p.swatches.sumOf { it.population }.coerceAtLeast(1)
+    val cands = p.swatches.map { sw ->
+        val a = FloatArray(3)
+        android.graphics.Color.colorToHSV(sw.rgb, a)
+        Cand(a[0], a[1], a[2], (sw.population.toFloat() / total) * (0.25f + a[1]) * (if (a[2] < 0.15f) 0.1f else 1f))
+    }.sortedByDescending { it.w }
+    fun colorful(c: Cand) = c.s > 0.2f && c.v > 0.2f
+    val first = cands.firstOrNull { colorful(it) }
+    if (first == null) {
+        // Schwarz-weißes Cover: helle, kühle Grautöne
+        return CoverPal(Color(0xFF26262C), Color.White, Color(0xFFD7DCE8), Color(0xFFA9B0C2), Color(0xFF9DB4FF))
+    }
+    val h1 = first.h
+    val second = cands.firstOrNull { colorful(it) && hueDist(it.h, h1) >= 28f }
+    val h2 = second?.h ?: (h1 + 34f)
+    val third = cands.firstOrNull { colorful(it) && hueDist(it.h, h1) >= 28f && hueDist(it.h, h2) >= 28f }
+    val h3 = third?.h ?: (h1 - 30f)
+    val c1 = hsvColor(h1, first.s.coerceIn(0.6f, 0.95f), 1f)
+    val c2 = hsvColor(h2, (second?.s ?: first.s).coerceIn(0.55f, 0.9f), 1f)
+    val c3 = hsvColor(h3, 0.42f, 1f)
+    val colon = hsvColor(h1 + 165f, 0.7f, 1f)
+    val tint = hsvColor(h1, (first.s * 0.9f).coerceIn(0.35f, 0.85f), 0.28f)
+    return CoverPal(tint, c1, c2, c3, colon)
 }
 
 @Composable
 fun rememberCoverPalette(bmp: Bitmap?): State<CoverPal> = produceState(DefaultCoverPal, bmp) {
     value = withContext(Dispatchers.Default) {
-        if (bmp == null) DefaultCoverPal
-        else runCatching {
-            val p = Palette.from(bmp).maximumColorCount(24).generate()
-            val dom = p.getDominantColor(0xFF8B5CF6.toInt())
-            val tint = Color(p.getDarkVibrantColor(p.getDarkMutedColor(p.getMutedColor(dom))))
-            val c1 = brighten(p.getVibrantColor(dom))
-            val c2 = brighten(p.getLightVibrantColor(p.getLightMutedColor(c1.toArgb())))
-            val c3 = lerp(brighten(p.getLightMutedColor(p.getMutedColor(dom))), Color.White, 0.2f)
-            val colon = brighten(p.getDarkVibrantColor(p.getVibrantColor(dom)))
-            CoverPal(tint, c1, c2, c3, lerp(colon, c2, 0.3f))
-        }.getOrDefault(DefaultCoverPal)
+        if (bmp == null) DefaultCoverPal else runCatching { buildCoverPal(bmp) }.getOrDefault(DefaultCoverPal)
     }
 }
 
@@ -128,7 +152,7 @@ fun rememberCoverPalette(bmp: Bitmap?): State<CoverPal> = produceState(DefaultCo
 fun rememberPosition(info: MediaInfo): State<Long> = produceState(info.positionNow(), info) {
     while (true) {
         value = info.positionNow()
-        delay(500)
+        delay(1000)
     }
 }
 
@@ -472,13 +496,8 @@ fun MusicPopup(info: MediaInfo, modifier: Modifier = Modifier) {
 /** Eigene Musik-Seite im selben Stil wie das Fenster, bildschirmfüllend. Das Cover schrumpft zuerst – die Tasten bleiben groß. */
 @Composable
 fun MusicPage(info: MediaInfo, modifier: Modifier = Modifier) {
-    val tint by rememberCoverColor(info.cover)
-    val animTint by animateColorAsState(tint, tween(900), label = "pgtint")
-    Box(
-        modifier
-            .fillMaxSize()
-            .background(Brush.linearGradient(listOf(lerp(animTint, Color.Black, 0.2f), Color(0xFF0E0E12)))),
-    ) {
+    // Hintergrund und Farbverlauf kommen vom Root (Ursprung: Cover links)
+    Box(modifier.fillMaxSize()) {
         Row(Modifier.fillMaxSize().padding(horizontal = 36.dp, vertical = 18.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                 PlayerColumn(info, coverSize = 0.dp, scale = 1.45f, flex = true, modifier = Modifier.fillMaxHeight().widthIn(max = 460.dp))

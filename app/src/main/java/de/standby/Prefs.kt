@@ -68,6 +68,8 @@ object Prefs {
 
     // Seiten
     var miniPlayer by P("mini_player", true)
+    var rotateMode by P("rotate_mode", "cw") // cw | ccw | off
+    var musicHoldMin by P("music_hold_min", 2)
     var popupAuto by P("popup_auto", true)
     var popupSeconds by P("popup_seconds", 10)
     var pageDash by P("page_dash", false)

@@ -73,10 +73,16 @@ import java.util.Locale
 enum class Page { DASH, CLOCK, MUSIC, SPLIT, INFO }
 
 @Composable
-fun rememberNow(): State<LocalDateTime> = produceState(LocalDateTime.now()) {
-    while (true) {
-        value = LocalDateTime.now()
-        delay(1000 - System.currentTimeMillis() % 1000)
+fun rememberNow(): State<LocalDateTime> {
+    // Ohne Sekundenanzeige reicht ein Takt pro Minute – so wird fast nie neu gezeichnet.
+    val secs = Prefs.showSeconds && Prefs.clockStyle == "minimal"
+    return produceState(LocalDateTime.now(), secs) {
+        while (true) {
+            val n = LocalDateTime.now()
+            value = if (secs) n else n.withSecond(0).withNano(0)
+            val ms = System.currentTimeMillis()
+            delay(if (secs) 1000 - ms % 1000 else 60_000 - ms % 60_000 + 50)
+        }
     }
 }
 
@@ -198,30 +204,45 @@ fun StandbyRoot(window: Window) {
         } else null
     }
 
-    Box(
+    // Der Farbverlauf geht immer von dort aus, wo gerade das Cover zu sehen ist.
+    val anchorTarget = when (pages.getOrNull(pager.currentPage)) {
+        Page.DASH -> if (Prefs.dashMusic) Offset(if (Prefs.dashMusicRight) 1f else 0f, 0.4f) else Offset(0.5f, 1f)
+        Page.MUSIC -> Offset(0.12f, 0.5f)
+        Page.SPLIT -> Offset(1f, 0.5f)
+        else -> Offset(0.5f, 1f) // Uhr-Seite: Cover steckt in der Leiste unten
+    }
+    val anchor by androidx.compose.animation.core.animateOffsetAsState(anchorTarget, tween(700), label = "anchor")
+
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
+      Rotated90(Prefs.rotateMode) {
+        Box(
         Modifier
             .fillMaxSize()
             .background(bg)
             .drawBehind {
                 if (glowAlpha > 0.01f) {
                     val c = lerp(glowTint, Color.White, 0.06f)
-                    // Farbe kommt von rechts herein und reicht über die Bildmitte hinaus
+                    val at = Offset(anchor.x * size.width, anchor.y * size.height)
+                    val edge = kotlin.math.abs(anchor.x - 0.5f) * 2f
+                    val r = size.height * 1.15f * (1f - edge) + size.width * 0.9f * edge
                     drawRect(
-                        Brush.horizontalGradient(
-                            0f to Color.Transparent,
-                            0.30f to c.copy(alpha = 0.10f * glowAlpha),
-                            0.65f to c.copy(alpha = 0.55f * glowAlpha),
-                            1f to c.copy(alpha = 0.95f * glowAlpha),
+                        Brush.radialGradient(
+                            0f to c.copy(alpha = 0.95f * glowAlpha),
+                            0.35f to c.copy(alpha = 0.62f * glowAlpha),
+                            0.70f to c.copy(alpha = 0.20f * glowAlpha),
+                            1f to Color.Transparent,
+                            center = at,
+                            radius = r,
                         ),
                     )
                     drawCircle(
                         Brush.radialGradient(
-                            listOf(lerp(c, Color.White, 0.18f).copy(alpha = 0.40f * glowAlpha), Color.Transparent),
-                            center = Offset(size.width * 0.92f, size.height * 0.35f),
-                            radius = size.width * 0.5f,
+                            listOf(lerp(c, Color.White, 0.2f).copy(alpha = 0.32f * glowAlpha), Color.Transparent),
+                            center = at,
+                            radius = r * 0.35f,
                         ),
-                        radius = size.width * 0.5f,
-                        center = Offset(size.width * 0.92f, size.height * 0.35f),
+                        radius = r * 0.35f,
+                        center = at,
                     )
                 }
             }
@@ -299,7 +320,9 @@ fun StandbyRoot(window: Window) {
             }
         }
 
-        if (settings) SettingsScreen(onClose = { settings = false })
+        }
+      }
+      if (settings) SettingsScreen(onClose = { settings = false })
     }
 }
 
@@ -349,29 +372,6 @@ private fun ClockPage(now: LocalDateTime, media: MediaInfo?, musicActive: Boolea
             }
         }
         if (showMini && media != null) {
-            val glow by rememberCoverColor(media.cover)
-            val animGlow by animateColorAsState(glow, tween(1200), label = "glow")
-            Box(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.42f)
-                    .drawBehind {
-                        val c = lerp(animGlow, Color.White, 0.1f)
-                        // Elliptischer Schimmer, der von unten in die Seite hineinleuchtet
-                        scale(scaleX = 1.9f, scaleY = 1f, pivot = Offset(size.width / 2f, size.height)) {
-                            drawCircle(
-                                Brush.radialGradient(
-                                    listOf(c.copy(alpha = 0.42f), c.copy(alpha = 0.12f), Color.Transparent),
-                                    center = Offset(size.width / 2f, size.height * 1.05f),
-                                    radius = size.height * 1.05f,
-                                ),
-                                radius = size.height * 1.05f,
-                                center = Offset(size.width / 2f, size.height * 1.05f),
-                            )
-                        }
-                    },
-            )
             MiniPlayer(media, onOpenMusic, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
         }
     }

@@ -206,6 +206,8 @@ fun SettingsScreen(onClose: () -> Unit) {
                     }
                 }
                 SwitchRow("Mini-Player unter der Uhr", Prefs.miniPlayer) { Prefs.miniPlayer = it }
+                Text("Nach einer Pause noch anzeigen für …", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
+                Chips(listOf("2" to "2 Min.", "10" to "10 Min.", "30" to "30 Min.", "120" to "2 Std.", "0" to "Immer"), Prefs.musicHoldMin.toString()) { Prefs.musicHoldMin = it.toInt() }
                 SwitchRow("Musik-Fenster bei neuem Lied automatisch öffnen", Prefs.popupAuto) { Prefs.popupAuto = it }
                 if (Prefs.popupAuto) {
                     Text("Offen bleiben für …", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
@@ -231,6 +233,14 @@ fun SettingsScreen(onClose: () -> Unit) {
                 Text("Zur Seite wischen: Uhr → Musik (nur wenn etwas läuft) → Uhr + Musik → Infos", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
                 SwitchRow("Seite „Uhr + Musik / Aufgaben“", Prefs.pageSplit) { Prefs.pageSplit = it }
                 SwitchRow("Seite „Infos“ (Wetter, Aufgaben, Klausuren)", Prefs.pageInfo) { Prefs.pageInfo = it }
+            }
+
+            Section("Ausrichtung") {
+                Text("Die App steht hochkant, das Bild bleibt aber im Querformat-Layout und wird gedreht.", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
+                Chips(
+                    listOf("cw" to "Oberkante rechts", "ccw" to "Oberkante links", "off" to "Nicht drehen"),
+                    Prefs.rotateMode,
+                ) { Prefs.rotateMode = it }
             }
 
             Section("Anzeige & Nacht") {
